@@ -66,3 +66,12 @@ Affects-specs: specs/architecture/services.md#chat-service
 Detail: A YAML lookup of ~100–200 medical abbreviations and synonyms chosen over LLM-based expansion. Zero latency, no API cost, deterministic behavior. LLM-based expansion can be added later as part of ENH-002 if static dict proves insufficient after Phase 2 search quality evaluation (FEAT-025).
 
 ---
+
+### [NOTE] 2026-05-13 — Phase 1 formally started
+
+Topics: phase-planning, phase-1-core-services
+Affects-phases: phase-1-core-services
+Affects-specs: specs/status.md, specs/phases/README.md
+Detail: Phase 1 — Core Services started via /start-phase. Branch `phase-1-core-services` created. No P0/P1 bugs in backlog. Implementation begins with Group 0 (infrastructure + shared prerequisites), then Groups 1–3 in parallel (Uploader, Doc Processing, Chat Service), then Group 4 (wiring + integration), then Group 5 (verification).
+
+---

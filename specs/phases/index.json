@@ -5,7 +5,7 @@
       "name": "Bootstrap",
       "slug": "phase-0-bootstrap",
       "version": "v0.1.0",
-      "status": "in_progress",
+      "status": "complete",
       "path": "specs/phases/phase-0-bootstrap",
       "topics": ["fastapi", "pydantic", "python", "docker", "docker-compose", "postgresql", "alembic", "weaviate", "sqs", "elasticmq", "shared-models", "service-skeletons", "local-dev", "github-actions", "ci", "contracts", "microservices"]
     },
@@ -14,8 +14,9 @@
       "name": "Core Services",
       "slug": "phase-1-core-services",
       "version": "v0.2.0",
-      "status": "planned",
-      "path": "specs/phases/phase-1-core-services"
+      "status": "in-progress",
+      "path": "specs/phases/phase-1-core-services",
+      "topics": ["chat-service", "uploader-service", "doc-processing", "minio", "s3", "presidio", "pii-scrubbing", "sqs", "sse", "streaming", "pdfplumber", "python-docx", "tiktoken", "chunking", "query-expansion", "medical-synonyms", "weaviate", "hybrid-search", "audit-log", "query-history", "postgresql", "sqlalchemy", "openai", "anthropic", "llm-client", "fastapi"]
     },
     {
       "number": 2,
@@ -50,6 +51,6 @@
       "path": "specs/phases/phase-5-production"
     }
   ],
-  "active_phase": 0,
-  "last_updated": "2026-05-12"
+  "active_phase": 1,
+  "last_updated": "2026-05-13"
 }
