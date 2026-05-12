@@ -17,3 +17,5 @@
 | [0003](0003-medical-embedding-models.md) | BioGPT/SciBERT for domain-specific medical embeddings | accepted | 2026-05-12 |
 | [0004](0004-zero-downtime-reindex.md) | Shadow index + alias swap for zero-downtime re-indexing | accepted | 2026-05-12 |
 | [0005](0005-ecs-fargate-over-eks.md) | ECS Fargate over EKS for container orchestration | accepted | 2026-05-12 |
+| [0006](0006-vector-db-weaviate.md) | Weaviate as primary vector database (hybrid search + alias swap) | accepted | 2026-05-12 |
+| [0007](0007-fastapi-backend-framework.md) | FastAPI for all HTTP-facing services | accepted | 2026-05-12 |

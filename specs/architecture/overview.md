@@ -144,3 +144,5 @@ See ADRs in `specs/decisions/`:
 | [0003](../decisions/0003-medical-embedding-models.md) | BioGPT/SciBERT for domain-specific embeddings |
 | [0004](../decisions/0004-zero-downtime-reindex.md) | Shadow index + alias swap for zero-downtime re-indexing |
 | [0005](../decisions/0005-ecs-fargate-over-eks.md) | ECS Fargate over EKS for orchestration |
+| [0006](../decisions/0006-vector-db-weaviate.md) | Weaviate as primary vector DB (hybrid search + alias swap) |
+| [0007](../decisions/0007-fastapi-backend-framework.md) | FastAPI for all HTTP-facing services |

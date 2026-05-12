@@ -2,7 +2,8 @@
 
 > **Version**: v1  
 > **Base URL**: `https://api.{org}.internal/api/v1`  
-> **Auth**: JWT Bearer token (validated by AWS API Gateway Lambda Authorizer)
+> **Auth**: JWT Bearer token (validated by AWS API Gateway Lambda Authorizer)  
+> **Formal spec**: [`openapi.yaml`](openapi.yaml) (OpenAPI 3.0.3)
 
 ---
 
