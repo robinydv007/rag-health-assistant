@@ -56,7 +56,8 @@
       "specs/planning/roadmap.md"
     ],
     "local-dev": [
-      "specs/phases/phase-0-bootstrap/plan.md"
+      "specs/phases/phase-0-bootstrap/plan.md",
+      "specs/phases/phase-1-core-services/plan.md"
     ],
     "ci": [
       "specs/phases/phase-0-bootstrap/plan.md",
@@ -69,6 +70,51 @@
     "tech-stack": [
       "specs/architecture/overview.md",
       "specs/vision/principles.md"
+    ],
+    "s3": [
+      "specs/architecture/services.md",
+      "specs/phases/phase-1-core-services/plan.md"
+    ],
+    "minio": [
+      "specs/phases/phase-1-core-services/plan.md",
+      "specs/phases/phase-1-core-services/overview.md"
+    ],
+    "chat-service": [
+      "specs/architecture/services.md",
+      "specs/phases/phase-1-core-services/overview.md",
+      "specs/phases/phase-1-core-services/plan.md"
+    ],
+    "search-quality": [
+      "specs/phases/phase-1-core-services/overview.md",
+      "specs/phases/phase-1-core-services/history.md"
+    ],
+    "doc-processing": [
+      "specs/architecture/services.md",
+      "specs/phases/phase-1-core-services/overview.md",
+      "specs/phases/phase-1-core-services/plan.md"
+    ],
+    "hl7": [
+      "specs/architecture/services.md",
+      "specs/phases/phase-1-core-services/plan.md",
+      "specs/phases/phase-1-core-services/history.md"
+    ],
+    "query-expansion": [
+      "specs/architecture/services.md",
+      "specs/phases/phase-1-core-services/plan.md",
+      "specs/phases/phase-1-core-services/history.md"
+    ],
+    "weaviate": [
+      "specs/architecture/data-model.md",
+      "specs/architecture/overview.md",
+      "specs/phases/phase-1-core-services/overview.md"
+    ],
+    "phase-planning": [
+      "specs/planning/roadmap.md",
+      "specs/phases/phase-1-core-services/overview.md"
+    ],
+    "scope": [
+      "specs/phases/phase-1-core-services/overview.md",
+      "specs/planning/roadmap.md"
     ]
   }
 }
