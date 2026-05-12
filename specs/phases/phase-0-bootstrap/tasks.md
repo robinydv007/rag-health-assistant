@@ -1,8 +1,8 @@
 # Phase 0 Tasks
 
 > **Phase**: 0 — Bootstrap  
-> **Status**: In Progress  
-> **Progress**: 29 / 35
+> **Status**: Complete  
+> **Progress**: 35 / 35
 
 ---
 
@@ -45,16 +45,16 @@
 
 ## Group 4 — Wiring & Integration
 
-- [ ] Wire service configs to docker-compose
-- [ ] Verify `docker-compose up --build` all services healthy
-- [ ] Smoke test all 6 `/health` endpoints
-- [ ] Run Alembic migrations on local PostgreSQL
-- [ ] Create Weaviate schema on local Weaviate
+- [x] Wire service configs to docker-compose
+- [x] Verify `docker-compose up --build` all services healthy
+- [x] Smoke test all 6 `/health` endpoints
+- [x] Run Alembic migrations on local PostgreSQL
+- [x] Create Weaviate schema on local Weaviate
 
 ## Group 5 — Verification
 
 - [x] Write unit tests for shared models
 - [x] Write unit tests for config module
 - [x] Write GitHub Actions CI workflow
-- [ ] Confirm CI passes on clean branch
-- [ ] Update `specs/status.md`
+- [x] Confirm CI passes on clean branch
+- [x] Update `specs/status.md`

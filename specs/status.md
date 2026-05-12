@@ -1,8 +1,8 @@
 # Project Status
 
 > **Last Updated**: 2026-05-12
-> **Current Phase**: Phase 0 — Bootstrap (`in progress`)
-> **Latest Release**: None
+> **Current Phase**: Phase 1 — Core Services (`planned`)
+> **Latest Release**: v0.1.0 (Phase 0 complete)
 > **Health**: On Track
 
 ## Summary
@@ -13,23 +13,15 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 | Phase | Name | Status | Released |
 |-------|------|--------|---------|
-| _(none yet)_ | | | |
+| 0 | Bootstrap | Complete | v0.1.0 |
 
 ## Active Phase
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 0 | Bootstrap | In Progress | 31% |
+| 1 | Core Services | Planned | 0% |
 
-**Phase 0 Goal**: Working local dev environment, all service skeletons, shared contracts locked, CI pipeline passing.
-
-**Phase 0 Key Tasks** (see [tasks.md](phases/phase-0-bootstrap/tasks.md)):
-- Group 0: Shared contracts (Pydantic models, SQS schemas, DB migrations)
-- Group 1: Service skeletons (6 FastAPI apps with `/health` endpoints)
-- Group 2: Docker & local dev (docker-compose with all services)
-- Group 3: ADRs & spec documents
-- Group 4: Wiring & integration
-- Group 5: CI pipeline (GitHub Actions)
+**Phase 1 Goal**: Chat + Uploader + Doc Processing end-to-end — real document ingestion, text extraction, SQS pipeline wired.
 
 ## Upcoming Phases
 
@@ -55,9 +47,10 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 ## Next Actions
 
-1. Complete Group 0: define shared Pydantic models + SQS message schemas + Alembic migrations
-2. Complete Group 1: add `/ask`, `/ingest`, `/admin/reindex` stubs; wire shared config into services
-3. Complete Group 2: write Dockerfiles for all 6 services + init scripts
+1. Run `/brainstorm-phase` for Phase 1 — Core Services
+2. Implement Chat Service `/ask` with real RAG query logic
+3. Implement Uploader Service `/ingest` with S3 upload + SQS1 publish
+4. Implement Doc Processing SQS1 consumer with text extraction + PII scrubbing
 
 ## Key Decisions Made
 
@@ -76,3 +69,4 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 - 2026-05-12: Project initialized — spec structure scaffolded from architecture design
 - 2026-05-12: All vision docs, architecture specs, roadmap, and Phase 0 plan created
 - 2026-05-12: CLAUDE.md and agent rules written
+- 2026-05-12: Phase 0 complete — shared models, Alembic migrations, 6 service skeletons, Dockerfiles, docker-compose, init services, unit tests, GitHub Actions CI

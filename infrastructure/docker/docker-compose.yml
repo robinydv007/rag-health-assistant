@@ -146,6 +146,33 @@ services:
     depends_on:
       - postgres
 
+  db-migrate:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ../../:/app
+    command: >
+      sh -c "pip install --quiet -r requirements-migrations.txt &&
+             alembic upgrade head"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://raghealth:raghealth_local@postgres:5432/raghealth
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  weaviate-init:
+    image: alpine:3.19
+    volumes:
+      - ../../scripts/init-weaviate.sh:/init-weaviate.sh
+    command: >
+      sh -c "apk add --no-cache bash curl &&
+             WEAVIATE_URL=http://weaviate:8080 bash /init-weaviate.sh"
+    depends_on:
+      weaviate:
+        condition: service_healthy
+    restart: "no"
+
 volumes:
   postgres_data:
   weaviate_data:
