@@ -1,0 +1,474 @@
+openapi: 3.0.3
+info:
+  title: RAG Healthcare Knowledge Assistant API
+  version: "1.0"
+  description: >
+    Internal API for the RAG Healthcare Knowledge Assistant. Allows healthcare staff
+    to ask medical questions, upload documents, and manage the knowledge base.
+  contact:
+    email: devrobinydv@gmail.com
+
+servers:
+  - url: https://api.{org}.internal/api/v1
+    variables:
+      org:
+        default: your-org
+        description: Organisation subdomain
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token validated by AWS API Gateway Lambda Authorizer
+
+  schemas:
+    AskRequest:
+      type: object
+      required: [question, user_id]
+      properties:
+        question:
+          type: string
+          example: "What is the recommended insulin dosing for Type 2 diabetes per our formulary?"
+        user_id:
+          type: string
+          example: usr_abc123
+        session_id:
+          type: string
+          example: sess_xyz789
+
+    AskStreamChunk:
+      type: object
+      properties:
+        token:
+          type: string
+        done:
+          type: boolean
+        sources:
+          description: Present only on the final chunk (done=true)
+          type: array
+          items:
+            $ref: "#/components/schemas/Source"
+
+    Source:
+      type: object
+      properties:
+        doc_id:
+          type: string
+        title:
+          type: string
+        page:
+          type: integer
+        chunk:
+          type: string
+
+    QuerySummary:
+      type: object
+      properties:
+        query_id:
+          type: string
+        question:
+          type: string
+        asked_at:
+          type: string
+          format: date-time
+        sources_count:
+          type: integer
+
+    HistoryResponse:
+      type: object
+      properties:
+        queries:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuerySummary"
+        total:
+          type: integer
+
+    IngestResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          example: job_abc123
+        doc_id:
+          type: string
+          example: doc_xyz789
+        status:
+          type: string
+          enum: [pending]
+        status_url:
+          type: string
+          example: /api/v1/knowledge/history?doc_id=doc_xyz789
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        services:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            chat: healthy
+            uploader: healthy
+            doc_processing: healthy
+            embedding: healthy
+            indexing: healthy
+        queues:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              depth:
+                type: integer
+              dlq_depth:
+                type: integer
+        vector_db:
+          type: string
+        postgres:
+          type: string
+
+    ReindexRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+          example: Quarterly policy update batch
+
+    ReindexResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          example: reindex_job_001
+        shadow_index:
+          type: string
+          example: knowledge-v3
+        docs_queued:
+          type: integer
+          example: 847
+        status:
+          type: string
+          enum: [in_progress]
+
+    DlqMessage:
+      type: object
+      properties:
+        message_id:
+          type: string
+        error:
+          type: string
+        retries:
+          type: integer
+
+    DlqResponse:
+      type: object
+      properties:
+        dlq_1:
+          $ref: "#/components/schemas/DlqQueue"
+        dlq_2:
+          $ref: "#/components/schemas/DlqQueue"
+        dlq_3:
+          $ref: "#/components/schemas/DlqQueue"
+
+    DlqQueue:
+      type: object
+      properties:
+        count:
+          type: integer
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/DlqMessage"
+
+    RequeueRequest:
+      type: object
+      required: [queue, message_ids]
+      properties:
+        queue:
+          type: string
+          enum: [dlq_1, dlq_2, dlq_3]
+        message_ids:
+          type: array
+          items:
+            type: string
+
+    RequeueResponse:
+      type: object
+      properties:
+        requeued:
+          type: integer
+        failed:
+          type: integer
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        detail:
+          type: string
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid JWT
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    RateLimited:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    ServiceUnavailable:
+      description: Upstream service (LLM or Vector DB) unavailable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+paths:
+  /knowledge/ask:
+    post:
+      summary: Ask a medical question
+      description: >
+        Submit a natural-language medical question. Returns a Server-Sent Events (SSE) stream.
+        Each event is a JSON chunk. The final event (done=true) includes source citations.
+        Every request is written to the audit log (query_history table) regardless of outcome.
+      operationId: askQuestion
+      tags: [Chat]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AskRequest"
+      responses:
+        "200":
+          description: SSE stream of answer tokens
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/AskStreamChunk"
+              example: |
+                data: {"token": "The recommended", "done": false}
+                data: {"token": " starting dose", "done": false}
+                data: {"token": ".", "done": true, "sources": [...]}
+        "400":
+          description: Invalid question payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+
+  /knowledge/history:
+    get:
+      summary: Retrieve query history or check upload status
+      operationId: getHistory
+      tags: [Chat]
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: doc_id
+          in: query
+          description: Filter by document upload job
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Paginated query history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoryResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /knowledge/ingest:
+    post:
+      summary: Upload a document to the knowledge base
+      description: >
+        Accepts a document file (PDF, DOCX, TXT, HL7). Saves to S3, creates a DB record,
+        and enqueues for async processing. Returns immediately with HTTP 202 and a job ID.
+        PII scrubbing happens downstream in Doc Processing — raw file content is never
+        forwarded without scrubbing.
+      operationId: ingestDocument
+      tags: [Uploader]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, title, doc_type]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF, DOCX, TXT, or HL7 file
+                title:
+                  type: string
+                doc_type:
+                  type: string
+                  enum:
+                    - clinical_guideline
+                    - hospital_policy
+                    - hl7_standard
+                    - drug_formulary
+                    - other
+                target_index:
+                  type: string
+                  enum: [live, shadow]
+                  default: live
+                  description: Use "shadow" only during admin-initiated re-index flows
+      responses:
+        "202":
+          description: Document accepted for async processing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestResponse"
+        "400":
+          description: Unsupported file type or missing fields
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+  /health:
+    get:
+      summary: Aggregate system health check
+      description: >
+        Returns health status of all 5 services, 3 SQS queues (+DLQs), Vector DB,
+        and PostgreSQL. Used by ops and the load balancer health probe.
+      operationId: getHealth
+      tags: [Admin]
+      responses:
+        "200":
+          description: All systems healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+        "503":
+          description: One or more systems unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /admin/reindex:
+    post:
+      summary: Trigger a full zero-downtime re-index
+      description: >
+        Creates a shadow index, re-queues all S3 documents through the ingestion pipeline,
+        and swaps the live alias when complete. Users experience no downtime.
+        Requires admin-level JWT scope.
+      operationId: triggerReindex
+      tags: [Admin]
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReindexRequest"
+      responses:
+        "202":
+          description: Re-index job started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReindexResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Re-index already in progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /admin/dlq:
+    get:
+      summary: Inspect failed messages across all dead letter queues
+      operationId: getDlq
+      tags: [Admin]
+      responses:
+        "200":
+          description: DLQ contents across all 3 queues
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DlqResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /admin/dlq/requeue:
+    post:
+      summary: Retry failed messages from a DLQ
+      description: Moves selected messages from a DLQ back to its main queue for reprocessing.
+      operationId: requeueDlq
+      tags: [Admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequeueRequest"
+      responses:
+        "200":
+          description: Requeue result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequeueResponse"
+        "400":
+          description: Invalid queue name or message IDs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+tags:
+  - name: Chat
+    description: User-facing query and history endpoints (Chat Service)
+  - name: Uploader
+    description: Document ingestion endpoint (Uploader Service)
+  - name: Admin
+    description: Operations endpoints — health, re-index, DLQ management (Admin Service)

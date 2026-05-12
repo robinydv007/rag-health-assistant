@@ -1,2 +1,134 @@
-# rag-health-assistant
-RAG based health assitant
+# RAG Healthcare Knowledge Assistant
+
+An internal AI assistant for healthcare teams. Staff ask natural-language medical questions and get accurate, source-cited answers drawn from the organisation's own clinical document library — clinical guidelines, hospital policies, HL7 standards, drug formularies.
+
+Built on a HIPAA-compliant microservices architecture with a 3-stage async document processing pipeline, hybrid semantic + keyword retrieval, and zero-downtime re-indexing.
+
+---
+
+## Architecture
+
+![System Architecture](architecture-diagram.png)
+
+> Full architecture walkthrough → **[ARCHITECTURE.md](ARCHITECTURE.md)**
+
+The system is composed of 6 microservices behind an AWS API Gateway:
+
+| Service | Role |
+|---|---|
+| **Chat Service** | Query expansion → hybrid search → rerank → LLM → SSE stream |
+| **Uploader Service** | Receive file → S3 → PostgreSQL → enqueue |
+| **Doc Processing** | PII scrub → parse → chunk → enqueue |
+| **Embedding Service** | BioGPT/SciBERT vectorisation (GPU) → enqueue |
+| **Indexing Service** | Write vectors to Weaviate → update status → audit log |
+| **Admin Service** | Re-index, alias swap, DLQ management, health checks |
+
+Services communicate through **AWS SQS queues** (3 queues + 3 Dead Letter Queues). No service waits on another — each finishes its job and pushes to the next queue.
+
+---
+
+## System Design Docs
+
+| Document | Contents |
+|---|---|
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Full design: services, async pipeline, LLM strategy, scaling, failure recovery, tech stack |
+| [Architecture Overview](specs/architecture/overview.md) | Component diagram, data stores, re-index flow, ADR index |
+| [Data Model](specs/architecture/data-model.md) | PostgreSQL schema (documents, query_history, indexing_jobs, chunk_audit), Weaviate class, S3 layout |
+| [API Reference](specs/architecture/api-reference.md) | All endpoints with request/response examples, SQS message schemas, rate limits |
+| [OpenAPI Spec](specs/architecture/openapi.yaml) | Formal OpenAPI 3.0.3 spec — importable into Swagger UI or Postman |
+| [Services Breakdown](specs/architecture/services.md) | Per-service responsibilities, triggers, scaling rules |
+
+---
+
+## Architecture Decisions (ADRs)
+
+| ADR | Decision |
+|---|---|
+| [0001](specs/decisions/0001-microservices-over-monolith.md) | Microservices — one job per service |
+| [0002](specs/decisions/0002-sqs-async-pipeline.md) | SQS async pipeline with DLQs |
+| [0003](specs/decisions/0003-medical-embedding-models.md) | BioGPT/SciBERT for medical embeddings |
+| [0004](specs/decisions/0004-zero-downtime-reindex.md) | Shadow index + alias swap |
+| [0005](specs/decisions/0005-ecs-fargate-over-eks.md) | ECS Fargate over EKS |
+| [0006](specs/decisions/0006-vector-db-weaviate.md) | Weaviate as vector DB (hybrid search + alias swap) |
+| [0007](specs/decisions/0007-fastapi-backend-framework.md) | FastAPI for all HTTP-facing services |
+
+Full ADR index → [specs/decisions/README.md](specs/decisions/README.md)
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Why |
+|---|---|---|
+| API Gateway | AWS API Gateway | Managed JWT auth, rate limiting, routing |
+| Backend | Python FastAPI | Async-native, SSE streaming, ML ecosystem |
+| RAG | LangChain | Retrieval chains, prompt management |
+| LLM (primary) | GPT-4 / Claude 3 | Best quality for medical queries |
+| LLM (fallback) | Llama 2 / Mistral 7B | Self-hosted, works if primary is down |
+| Embeddings | BioGPT / SciBERT | Trained on medical text |
+| Vector DB | Weaviate | Hybrid semantic + keyword (BM25) search |
+| SQL DB | PostgreSQL (RDS Multi-AZ) | Audit logs, doc status, query history |
+| Queues | AWS SQS | Managed, DLQ built-in, drives autoscaling |
+| Storage | AWS S3 | Raw docs, lifecycle → Glacier after 90 days |
+| Compute | ECS Fargate + EC2 GPU | Serverless containers + GPU for embeddings |
+| CI/CD | GitHub Actions | Test, build, deploy |
+| Observability | Prometheus + Grafana, Jaeger, ELK | Metrics, tracing, logs |
+
+---
+
+## Data Flow
+
+**Document ingestion**
+```
+User uploads file
+  → Uploader Service (S3 + PostgreSQL + SQS 1)
+  → Doc Processing (PII scrub → chunk → SQS 2)
+  → Embedding Service (BioGPT/SciBERT → SQS 3)
+  → Indexing Service (write to Weaviate + audit log)
+```
+
+**Query response**
+```
+User asks question
+  → Chat Service (query expand → hybrid search Weaviate → rerank)
+  → LLM Router (GPT-4/Claude → Llama fallback)
+  → SSE stream back to user with source citations
+  → Audit log written to PostgreSQL
+```
+
+---
+
+## Performance Targets
+
+| Metric | Target |
+|---|---|
+| p95 response time | < 2 seconds |
+| Concurrent users | 500+ |
+| Document throughput | 1000+ docs/min during re-index |
+| Uptime | 99.9% |
+| Re-index downtime | Zero |
+
+---
+
+## Project Planning
+
+| Document | Contents |
+|---|---|
+| [Roadmap](specs/planning/roadmap.md) | 6-phase release plan (v0.1 → v1.0) |
+| [Status](specs/status.md) | Current phase, progress, blockers |
+| [Backlog](specs/backlog/backlog.md) | Features, bugs, tech debt |
+
+---
+
+## Quick Start
+
+```bash
+# Copy environment variables
+cp .env.example .env
+
+# Start all services locally
+docker compose up
+```
+
+> Detailed setup → [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)  
+> API usage → [docs/API.md](docs/API.md)
