@@ -2,7 +2,7 @@
 
 > **Phase**: 1 — Core Services
 > **Status**: In Progress
-> **Progress**: 14 / 47
+> **Progress**: 27 / 47
 
 ---
 
@@ -28,19 +28,19 @@
 
 ## Group 2 — Doc Processing Service
 
-- [ ] Implement SQS 1 consumer loop (long-poll, dispatch, delete on success, PG update)
-- [ ] Implement Presidio PII scrubber (`services/doc-processing/src/scrubber.py`)
-- [ ] Implement PDF parser (`services/doc-processing/src/parsers/pdf_parser.py`)
-- [ ] Implement DOCX parser (`services/doc-processing/src/parsers/docx_parser.py`)
-- [ ] Implement TXT parser (`services/doc-processing/src/parsers/txt_parser.py`)
-- [ ] Implement chunker: 512-token chunks, 50-token overlap (`services/doc-processing/src/chunker.py`)
-- [ ] Publish chunk batch to SQS 2; update `documents.chunks_total`
-- [ ] Unit test: PII scrubber (verify all entity types redacted)
-- [ ] Unit test: PDF parser (fixture file, verify text + page_num)
-- [ ] Unit test: DOCX parser (fixture file)
-- [ ] Unit test: TXT parser (UTF-8 and latin-1 fixtures)
-- [ ] Unit test: chunker (token counts ≤512, overlap ≥50 between adjacent chunks)
-- [ ] Integration test: SQS 1 message → SQS 2 messages appear + PG status = processing + no raw PII in chunks
+- [x] Implement SQS 1 consumer loop (long-poll, dispatch, delete on success, PG update)
+- [x] Implement Presidio PII scrubber (`services/doc-processing/src/scrubber.py`)
+- [x] Implement PDF parser (`services/doc-processing/src/parsers/pdf_parser.py`)
+- [x] Implement DOCX parser (`services/doc-processing/src/parsers/docx_parser.py`)
+- [x] Implement TXT parser (`services/doc-processing/src/parsers/txt_parser.py`)
+- [x] Implement chunker: 512-token chunks, 50-token overlap (`services/doc-processing/src/chunker.py`)
+- [x] Publish chunk batch to SQS 2; update `documents.chunks_total`
+- [x] Unit test: PII scrubber (verify all entity types redacted)
+- [x] Unit test: PDF parser (fixture file, verify text + page_num)
+- [x] Unit test: DOCX parser (fixture file)
+- [x] Unit test: TXT parser (UTF-8 and latin-1 fixtures)
+- [x] Unit test: chunker (token counts ≤512, overlap ≥50 between adjacent chunks)
+- [x] Integration test: SQS 1 message → SQS 2 messages appear + PG status = processing + no raw PII in chunks
 
 ## Group 3 — Chat Service
 
