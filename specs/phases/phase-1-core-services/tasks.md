@@ -1,20 +1,20 @@
 # Phase 1 Tasks
 
 > **Phase**: 1 — Core Services
-> **Status**: Planned
-> **Progress**: 0 / 47
+> **Status**: In Progress
+> **Progress**: 7 / 47
 
 ---
 
 ## Group 0 — Infrastructure & Shared Prerequisites
 
-- [ ] Add MinIO service to `docker-compose.yml` (image, port 9000/9001, bucket auto-create)
-- [ ] Create `shared/clients/s3_client.py` — boto3 wrapper, endpoint via `S3_ENDPOINT_URL`
-- [ ] Create `shared/clients/llm_client.py` — async OpenAI/Anthropic streaming, `LLM_PROVIDER` + `LLM_MOCK` env vars
-- [ ] Create `shared/data/medical_synonyms.yaml` (100–200 entries)
-- [ ] Create `shared/utils/query_expander.py`
-- [ ] Add Phase 1 deps to service `requirements.txt` files: `presidio-analyzer`, `presidio-anonymizer`, `pdfplumber`, `python-docx`, `openai`, `anthropic`, `tiktoken`, `weaviate-client`
-- [ ] Update `.env.example` with new vars
+- [x] Add MinIO service to `docker-compose.yml` (image, port 9000/9001, bucket auto-create)
+- [x] Create `shared/clients/s3_client.py` — boto3 wrapper, endpoint via `S3_ENDPOINT_URL`
+- [x] Create `shared/clients/llm_client.py` — async OpenAI/Anthropic streaming, `LLM_PROVIDER` + `LLM_MOCK` env vars
+- [x] Create `shared/data/medical_synonyms.yaml` (150 entries)
+- [x] Create `shared/utils/query_expander.py`
+- [x] Add Phase 1 deps to service `requirements.txt` files: `openai`, `anthropic`, `tiktoken`, `weaviate-client`, `pyyaml`
+- [x] Update `.env.example` with new vars
 
 ## Group 1 — Uploader Service
 
