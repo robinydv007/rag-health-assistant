@@ -1,7 +1,7 @@
 # Project Status
 
 > **Last Updated**: 2026-05-12
-> **Current Phase**: Phase 0 — Bootstrap (`not started`)
+> **Current Phase**: Phase 0 — Bootstrap (`in progress`)
 > **Latest Release**: None
 > **Health**: On Track
 
@@ -19,7 +19,7 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 0 | Bootstrap | Not Started | 0% |
+| 0 | Bootstrap | In Progress | 31% |
 
 **Phase 0 Goal**: Working local dev environment, all service skeletons, shared contracts locked, CI pipeline passing.
 
@@ -55,8 +55,9 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 ## Next Actions
 
-1. Run `/start-phase` to begin Phase 0 — Bootstrap
-2. Start with Group 0: define shared Pydantic models and SQS schemas
+1. Complete Group 0: define shared Pydantic models + SQS message schemas + Alembic migrations
+2. Complete Group 1: add `/ask`, `/ingest`, `/admin/reindex` stubs; wire shared config into services
+3. Complete Group 2: write Dockerfiles for all 6 services + init scripts
 
 ## Key Decisions Made
 
@@ -67,6 +68,8 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 | [0003](decisions/0003-medical-embedding-models.md) | BioGPT/SciBERT for domain-specific medical embeddings | 2026-05-12 |
 | [0004](decisions/0004-zero-downtime-reindex.md) | Shadow index + alias swap for zero-downtime re-indexing | 2026-05-12 |
 | [0005](decisions/0005-ecs-fargate-over-eks.md) | ECS Fargate over EKS for container orchestration | 2026-05-12 |
+| [0006](decisions/0006-vector-db-weaviate.md) | Weaviate for vector DB — hybrid search, self-hosted, alias swap | 2026-05-12 |
+| [0007](decisions/0007-fastapi-backend-framework.md) | FastAPI for all HTTP-facing services — async SSE, Pydantic integration | 2026-05-12 |
 
 ## Recent Changes
 

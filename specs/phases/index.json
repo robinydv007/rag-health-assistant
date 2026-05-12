@@ -5,8 +5,9 @@
       "name": "Bootstrap",
       "slug": "phase-0-bootstrap",
       "version": "v0.1.0",
-      "status": "not_started",
-      "path": "specs/phases/phase-0-bootstrap"
+      "status": "in_progress",
+      "path": "specs/phases/phase-0-bootstrap",
+      "topics": ["fastapi", "pydantic", "python", "docker", "docker-compose", "postgresql", "alembic", "weaviate", "sqs", "elasticmq", "shared-models", "service-skeletons", "local-dev", "github-actions", "ci", "contracts", "microservices"]
     },
     {
       "number": 1,

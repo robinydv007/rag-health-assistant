@@ -39,3 +39,12 @@ Affects-specs: none
 Detail: ElasticMQ is an SQS-compatible server that runs locally in Docker. This lets the full async pipeline work in docker-compose without real AWS credentials. The boto3 SQS client is pointed at `http://elasticmq:9324` in local dev and at real SQS endpoint in staging/prod via environment config.
 
 ---
+
+### [NOTE] 2026-05-12 — Phase 0 formally started; pre-phase scaffold work accounted for
+
+Topics: project-init, local-dev, bootstrap, contracts
+Affects-phases: phase-0-bootstrap
+Affects-specs: specs/status.md, specs/phases/phase-0-bootstrap/tasks.md
+Detail: Phase formally opened via `/start-phase`. A readiness review identified that significant scaffold work had been completed before the phase was formally started: `shared/config/settings.py`, `shared/config/weaviate_schema.py`, `docker-compose.yml`, `.env.example`, all 6 service health-endpoint skeletons, and ADRs 0001–0007. Tasks.md updated to reflect actual state (11/35 done, 6 in-progress). ADRs 0006 (Weaviate) and 0007 (FastAPI) added to task list and status.md Key Decisions table. Remaining blockers: shared Pydantic models, Alembic migrations, Dockerfiles, CI pipeline.
+
+---

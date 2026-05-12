@@ -1,6 +1,16 @@
 # Phase 0 — Execution Plan
 
-> **Execution Order**: Group 0 → (Groups 1 + 2 + 3 in parallel) → Group 4 → Group 5
+> **Execution Order**: Group 0 → (Groups 1 + 2 in parallel) → Group 4 → Group 5  
+> **Group 3 (ADRs)**: Complete ✓ — all 7 ADRs written
+
+## Reference Specs
+
+| Spec | Relevance |
+|------|-----------|
+| `specs/architecture/overview.md` | Service map, data-flow diagram, infrastructure |
+| `specs/architecture/services.md` | Per-service responsibilities, endpoints, SQS trigger |
+| `specs/architecture/api-reference.md` | HTTP + SQS message schemas for service stubs |
+| `specs/architecture/data-model.md` | PostgreSQL tables for Alembic migrations; Weaviate schema |
 
 ---
 
