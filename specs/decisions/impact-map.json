@@ -1,0 +1,74 @@
+{
+  "topics": {
+    "architecture": [
+      "specs/architecture/overview.md",
+      "specs/vision/project-charter.md"
+    ],
+    "microservices": [
+      "specs/architecture/overview.md",
+      "specs/architecture/services.md"
+    ],
+    "async-pipeline": [
+      "specs/architecture/overview.md",
+      "specs/architecture/services.md",
+      "specs/architecture/api-reference.md"
+    ],
+    "sqs": [
+      "specs/architecture/overview.md",
+      "specs/architecture/api-reference.md",
+      "specs/architecture/services.md"
+    ],
+    "embedding": [
+      "specs/architecture/services.md",
+      "specs/architecture/overview.md"
+    ],
+    "vector-db": [
+      "specs/architecture/data-model.md",
+      "specs/architecture/overview.md"
+    ],
+    "data-model": [
+      "specs/architecture/data-model.md"
+    ],
+    "reindex": [
+      "specs/architecture/overview.md",
+      "specs/architecture/services.md",
+      "specs/vision/success-criteria.md"
+    ],
+    "compliance": [
+      "specs/vision/project-charter.md",
+      "specs/vision/success-criteria.md",
+      "specs/vision/principles.md"
+    ],
+    "pii-scrubbing": [
+      "specs/architecture/services.md",
+      "specs/vision/principles.md"
+    ],
+    "llm-router": [
+      "specs/architecture/services.md",
+      "specs/architecture/overview.md"
+    ],
+    "observability": [
+      "specs/architecture/overview.md",
+      "specs/planning/roadmap.md"
+    ],
+    "infrastructure": [
+      "specs/architecture/overview.md",
+      "specs/planning/roadmap.md"
+    ],
+    "local-dev": [
+      "specs/phases/phase-0-bootstrap/plan.md"
+    ],
+    "ci": [
+      "specs/phases/phase-0-bootstrap/plan.md",
+      "specs/phases/phase-0-bootstrap/tasks.md"
+    ],
+    "project-init": [
+      "specs/status.md",
+      "specs/vision/project-charter.md"
+    ],
+    "tech-stack": [
+      "specs/architecture/overview.md",
+      "specs/vision/principles.md"
+    ]
+  }
+}
