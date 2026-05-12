@@ -7,8 +7,8 @@ KNOWLEDGE_CHUNK_CLASS = {
     "properties": [
         {"name": "docId",          "dataType": ["text"],   "description": "Document UUID"},
         {"name": "chunkId",        "dataType": ["text"],   "description": "Unique chunk ID"},
-        {"name": "chunkIdx",       "dataType": ["int"],    "description": "Position within document"},
-        {"name": "text",           "dataType": ["text"],   "description": "Chunk text (PII-scrubbed)"},
+        {"name": "chunkIdx",       "dataType": ["int"],    "description": "Position in document"},
+        {"name": "text",           "dataType": ["text"],   "description": "Scrubbed chunk text"},
         {"name": "docType",        "dataType": ["text"],   "description": "Document category"},
         {"name": "title",          "dataType": ["text"],   "description": "Document title"},
         {"name": "pageNum",        "dataType": ["int"],    "description": "Source page number"},

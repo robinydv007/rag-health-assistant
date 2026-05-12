@@ -12,7 +12,7 @@ A fully HIPAA-compliant RAG knowledge assistant that gives any healthcare staff 
 
 | Version | Phase | Key Deliverables | Target |
 |---------|-------|-----------------|--------|
-| v0.1.0 | Phase 0 — Bootstrap | Repo scaffold, contracts, local dev, CI pipeline | Sprint 1 |
+| v0.1.0 | Phase 0 — Bootstrap ✅ | Repo scaffold, contracts, local dev, CI pipeline | Sprint 1 |
 | v0.2.0 | Phase 1 — Core Services | Chat + Uploader + Doc Processing end-to-end | Sprint 2–3 |
 | v0.3.0 | Phase 2 — Embedding & Indexing | Full pipeline: embed → index, VectorDB queryable | Sprint 4–5 |
 | v0.4.0 | Phase 3 — Admin & LLM Router | Admin ops, zero-downtime re-index, LLM fallback | Sprint 6 |

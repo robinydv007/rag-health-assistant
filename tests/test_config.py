@@ -17,7 +17,11 @@ def test_base_settings_defaults():
 def test_base_settings_optional_fields_are_nullable():
     settings = BaseServiceSettings()
     # These are str | None — actual value depends on .env; just verify the type contract
-    for field in ("aws_endpoint_url", "weaviate_api_key", "openai_api_key", "anthropic_api_key", "llm_fallback_url"):
+    optional_fields = (
+        "aws_endpoint_url", "weaviate_api_key", "openai_api_key",
+        "anthropic_api_key", "llm_fallback_url",
+    )
+    for field in optional_fields:
         val = getattr(settings, field)
         assert val is None or isinstance(val, str), f"{field} must be str | None"
 
@@ -26,7 +30,10 @@ def test_weaviate_chunk_class_structure():
     assert KNOWLEDGE_CHUNK_CLASS["class"] == "KnowledgeChunk"
     assert KNOWLEDGE_CHUNK_CLASS["vectorizer"] == "none"
     prop_names = {p["name"] for p in KNOWLEDGE_CHUNK_CLASS["properties"]}
-    expected = {"docId", "chunkId", "chunkIdx", "text", "docType", "title", "pageNum", "version", "embeddedModel", "indexedAt"}
+    expected = {
+        "docId", "chunkId", "chunkIdx", "text", "docType",
+        "title", "pageNum", "version", "embeddedModel", "indexedAt",
+    }
     assert expected == prop_names
 
 
