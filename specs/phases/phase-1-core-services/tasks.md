@@ -2,7 +2,7 @@
 
 > **Phase**: 1 — Core Services
 > **Status**: In Progress
-> **Progress**: 7 / 47
+> **Progress**: 14 / 47
 
 ---
 
@@ -18,13 +18,13 @@
 
 ## Group 1 — Uploader Service
 
-- [ ] Implement `POST /api/v1/knowledge/ingest` handler (file validation, S3 upload, PG insert, SQS 1 publish, 202 response)
-- [ ] Add async SQLAlchemy session factory (`services/uploader-service/src/db.py`)
-- [ ] Unit test: valid PDF upload → HTTP 202
-- [ ] Unit test: invalid file type → HTTP 422
-- [ ] Unit test: S3 upload failure → HTTP 500
-- [ ] Unit test: PG insert failure → HTTP 500
-- [ ] Integration test: real MinIO + PostgreSQL — verify all side effects
+- [x] Implement `POST /api/v1/knowledge/ingest` handler (file validation, S3 upload, PG insert, SQS 1 publish, 202 response)
+- [x] Add async SQLAlchemy session factory (`services/uploader-service/src/db.py`)
+- [x] Unit test: valid PDF upload → HTTP 202
+- [x] Unit test: invalid file type → HTTP 422
+- [x] Unit test: S3 upload failure → HTTP 500
+- [x] Unit test: PG insert failure → HTTP 500
+- [x] Integration test: real MinIO + PostgreSQL — verify all side effects
 
 ## Group 2 — Doc Processing Service
 

@@ -1,5 +1,10 @@
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = [
+    "tests",
+    "services/uploader-service/tests",
+    "services/doc-processing/tests",
+    "services/chat-service/tests",
+]
 pythonpath = ["."]
 
 [tool.ruff]
