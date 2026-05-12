@@ -43,7 +43,8 @@ postgres_data/
 weaviate_data/
 
 # Model weights (stored in S3, not in repo)
-models/
+# Use /models/ to match only root-level; shared/models/ is a Python package
+/models/
 *.bin
 *.safetensors
 *.ckpt
