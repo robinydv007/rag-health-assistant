@@ -1,29 +1,30 @@
-# NNNN — Decision Title
+# ADR NNNN — Title
 
 > **Status**: proposed | accepted | superseded | deprecated
 > **Date**: YYYY-MM-DD
-> **Deciders**: <!-- names or roles -->
+> **Supersedes**: N/A
 
 ## Context
 
-<!-- What is the problem or situation that requires a decision? What forces are at play? -->
-
-## Options Considered
-
-### Option A — Name
-<!-- Describe the option. -->
-**Pros:** …
-**Cons:** …
-
-### Option B — Name
-<!-- Describe the option. -->
-**Pros:** …
-**Cons:** …
+<!-- What is the situation that makes this decision necessary? What forces are at play? -->
 
 ## Decision
 
-<!-- What was chosen and why? -->
+<!-- What is the decision? State it clearly and directly. -->
 
 ## Consequences
 
-<!-- What are the positive and negative results of this decision? What becomes easier or harder? -->
+### Positive
+- ...
+
+### Negative
+- ...
+
+### Risks
+- ...
+
+## Alternatives Considered
+
+| Option | Why Rejected |
+|--------|-------------|
+| ... | ... |

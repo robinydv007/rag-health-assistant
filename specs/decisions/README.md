@@ -1,25 +1,19 @@
 # Architecture Decision Records
 
-> Lightweight ADRs — one file per decision, append-only once accepted.
-
-## Index
-
-| ID | Title | Status | Date |
-|----|-------|--------|------|
-| [0000](0000-template.md) | ADR Template | template | — |
-
-## Process
-
-1. Copy `0000-template.md` → `NNNN-short-title.md`
-2. Fill in context, options, and decision
-3. Add a row to the index above
-4. Update `impact-map.json` with affected topics
+> Significant decisions, their context, and the reasoning behind them.
+> Every decision here has a "why" — not just a "what".
 
 ## Status Values
 
-| Status | Meaning |
-|--------|---------|
-| `proposed` | Under discussion |
-| `accepted` | Decided, in effect |
-| `superseded` | Replaced by a later ADR |
-| `deprecated` | No longer applicable |
+`proposed` | `accepted` | `superseded` | `deprecated`
+
+## Index
+
+| ADR | Title | Status | Date |
+|-----|-------|--------|------|
+| [0000](0000-template.md) | ADR Template | — | — |
+| [0001](0001-microservices-over-monolith.md) | Microservices architecture — one service per pipeline stage | accepted | 2026-05-12 |
+| [0002](0002-sqs-async-pipeline.md) | SQS async pipeline with DLQs for document processing | accepted | 2026-05-12 |
+| [0003](0003-medical-embedding-models.md) | BioGPT/SciBERT for domain-specific medical embeddings | accepted | 2026-05-12 |
+| [0004](0004-zero-downtime-reindex.md) | Shadow index + alias swap for zero-downtime re-indexing | accepted | 2026-05-12 |
+| [0005](0005-ecs-fargate-over-eks.md) | ECS Fargate over EKS for container orchestration | accepted | 2026-05-12 |

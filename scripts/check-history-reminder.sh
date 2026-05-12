@@ -1,24 +1,12 @@
 #!/usr/bin/env bash
-# Read-only hook: reminds Claude to log history when significant files change.
+# After editing files during an active phase, remind to log to history.md
 
-set -euo pipefail
+ACTIVE_PHASE_DIR=$(find specs/phases -name "history.md" | head -1 | xargs dirname 2>/dev/null)
 
-INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('tool_input',{}).get('file_path',''))" 2>/dev/null || echo "")
-
-if [ -z "$FILE_PATH" ]; then exit 0; fi
-
-SIGNIFICANT=false
-case "$FILE_PATH" in
-  specs/decisions/*.md)       SIGNIFICANT=true ;;
-  specs/phases/*/tasks.md)    SIGNIFICANT=true ;;
-  specs/backlog/backlog.md)   SIGNIFICANT=true ;;
-  specs/status.md)            SIGNIFICANT=true ;;
-  specs/architecture/*.md)    SIGNIFICANT=true ;;
-esac
-
-if [ "$SIGNIFICANT" = "true" ]; then
-  echo "PHASE HISTORY REMINDER: '$FILE_PATH' was modified — if this reflects a decision, scope change, or discovery, append an entry to the active phase history file (specs/phases/<active-phase>/history.md)."
+if [ -n "$ACTIVE_PHASE_DIR" ]; then
+  echo ""
+  echo "⚠️  HISTORY REMINDER: Did you append a meaningful entry to ${ACTIVE_PHASE_DIR}/history.md?"
+  echo "   Format: ### [TYPE] YYYY-MM-DD — Short title"
+  echo "   Types: [DECISION] [SCOPE_CHANGE] [DISCOVERY] [FEATURE] [ARCH_CHANGE] [EVALUATOR] [NOTE]"
+  echo ""
 fi
-
-exit 0

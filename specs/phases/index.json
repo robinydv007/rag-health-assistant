@@ -1,5 +1,54 @@
 {
-  "version": 1,
-  "description": "Maps each phase to topic keywords. Used by /sync-docs.",
-  "phases": {}
+  "phases": [
+    {
+      "number": 0,
+      "name": "Bootstrap",
+      "slug": "phase-0-bootstrap",
+      "version": "v0.1.0",
+      "status": "not_started",
+      "path": "specs/phases/phase-0-bootstrap"
+    },
+    {
+      "number": 1,
+      "name": "Core Services",
+      "slug": "phase-1-core-services",
+      "version": "v0.2.0",
+      "status": "planned",
+      "path": "specs/phases/phase-1-core-services"
+    },
+    {
+      "number": 2,
+      "name": "Embedding and Indexing",
+      "slug": "phase-2-embedding-indexing",
+      "version": "v0.3.0",
+      "status": "planned",
+      "path": "specs/phases/phase-2-embedding-indexing"
+    },
+    {
+      "number": 3,
+      "name": "Admin and LLM Router",
+      "slug": "phase-3-admin-llm-router",
+      "version": "v0.4.0",
+      "status": "planned",
+      "path": "specs/phases/phase-3-admin-llm-router"
+    },
+    {
+      "number": 4,
+      "name": "Observability and Hardening",
+      "slug": "phase-4-observability",
+      "version": "v0.5.0",
+      "status": "planned",
+      "path": "specs/phases/phase-4-observability"
+    },
+    {
+      "number": 5,
+      "name": "Production",
+      "slug": "phase-5-production",
+      "version": "v1.0.0",
+      "status": "planned",
+      "path": "specs/phases/phase-5-production"
+    }
+  ],
+  "active_phase": 0,
+  "last_updated": "2026-05-12"
 }
