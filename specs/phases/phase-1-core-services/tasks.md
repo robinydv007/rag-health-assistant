@@ -2,7 +2,7 @@
 
 > **Phase**: 1 — Core Services
 > **Status**: In Progress
-> **Progress**: 27 / 47
+> **Progress**: 38 / 47
 
 ---
 
@@ -44,17 +44,17 @@
 
 ## Group 3 — Chat Service
 
-- [ ] Implement query expander (`services/chat-service/src/expander.py`)
-- [ ] Implement Weaviate hybrid searcher (`services/chat-service/src/searcher.py`)
-- [ ] Implement score-based reranker (`services/chat-service/src/reranker.py`)
-- [ ] Implement LLM caller with SSE streaming (`services/chat-service/src/llm_caller.py`)
-- [ ] Implement `POST /api/v1/knowledge/ask` endpoint
-- [ ] Implement `GET /api/v1/knowledge/history` endpoint
-- [ ] Unit test: query expander
-- [ ] Unit test: searcher (mock Weaviate)
-- [ ] Unit test: reranker
-- [ ] Unit test: audit log write (success and error paths)
-- [ ] Integration test: `/ask` end-to-end with mock LLM + seeded Weaviate fixture
+- [x] Implement query expander (`services/chat-service/src/expander.py`)
+- [x] Implement Weaviate hybrid searcher (`services/chat-service/src/searcher.py`)
+- [x] Implement score-based reranker (`services/chat-service/src/reranker.py`)
+- [x] Implement LLM caller with SSE streaming (`services/chat-service/src/llm_caller.py`)
+- [x] Implement `POST /api/v1/knowledge/ask` endpoint
+- [x] Implement `GET /api/v1/knowledge/history` endpoint
+- [x] Unit test: query expander
+- [x] Unit test: searcher (mock Weaviate)
+- [x] Unit test: reranker
+- [x] Unit test: audit log write (success and error paths)
+- [x] Integration test: `/ask` end-to-end with mock LLM + seeded Weaviate fixture
 
 ## Group 4 — Wiring & Integration
 
