@@ -35,9 +35,9 @@ class BaseServiceSettings(BaseSettings):
     # LLM
     openai_api_key: str | None = None
     anthropic_api_key: str | None = None
-    llm_fallback_url: str | None = None  # Self-hosted Llama/Mistral endpoint
-    llm_provider: str = "openai"  # "openai" | "anthropic"
-    llm_mock: bool = False  # Return fixture tokens without real API calls
+    llm_primary: str = "openai"       # Provider tried first — must be in registry
+    llm_fallback: str = "anthropic"   # Provider used if primary fails
+    llm_fallback_url: str | None = None  # Self-hosted Llama/Mistral endpoint (Phase 3)
 
     # Embedding
     embedding_model: str = "biogpt"  # biogpt | scibert

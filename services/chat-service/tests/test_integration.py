@@ -10,6 +10,7 @@ Skipped when infrastructure env vars are absent.
 import asyncio
 import json
 import os
+from unittest.mock import patch
 
 import pytest
 import weaviate
@@ -63,20 +64,22 @@ class TestAskIntegration:
     def test_ask_streams_done_event_and_writes_audit_row(self, seeded_weaviate):
         client = TestClient(app, raise_server_exceptions=True)
 
-        # Use LLM_MOCK=true to avoid real API calls
-        import os
-        os.environ["LLM_MOCK"] = "true"
+        async def _fake_stream(system_prompt, user_prompt):
+            yield "Based on the sources, "
+            yield "aspirin 81mg is recommended for CAD."
 
-        with client.stream(
-            "POST",
-            "/api/v1/knowledge/ask",
-            json={"question": "What is the aspirin dose for CAD?", "user_id": "integ_test"},
-        ) as resp:
-            assert resp.status_code == 200
-            events = []
-            for line in resp.iter_lines():
-                if line.startswith("data:"):
-                    events.append(json.loads(line[len("data:"):].strip()))
+        import shared.clients.llm_client as _llm
+        with patch.dict(_llm._PROVIDERS, {"openai": _fake_stream}):
+            with client.stream(
+                "POST",
+                "/api/v1/knowledge/ask",
+                json={"question": "What is the aspirin dose for CAD?", "user_id": "integ_test"},
+            ) as resp:
+                assert resp.status_code == 200
+                events = []
+                for line in resp.iter_lines():
+                    if line.startswith("data:"):
+                        events.append(json.loads(line[len("data:"):].strip()))
 
         assert events, "No SSE events received"
         final = events[-1]
