@@ -30,12 +30,25 @@ _analyzer = None
 _anonymizer = None
 
 
+def _build_npi_recognizer():
+    # NPI is a HIPAA standard 10-digit identifier with no embedded check digit structure
+    # that Presidio can derive — a regex pattern recognizer is the correct approach.
+    from presidio_analyzer import PatternRecognizer
+    from presidio_analyzer.pattern import Pattern
+    return PatternRecognizer(
+        supported_entity="NPI",
+        patterns=[Pattern(name="npi_10digit", regex=r"\bNPI[:\s#]*\d{10}\b|\b\d{10}\b", score=0.5)],
+        context=["npi", "national provider", "provider identifier", "provider id"],
+    )
+
+
 def _get_engines():
     global _analyzer, _anonymizer
     if _analyzer is None:
         from presidio_analyzer import AnalyzerEngine
         from presidio_anonymizer import AnonymizerEngine
         _analyzer = AnalyzerEngine()
+        _analyzer.registry.add_recognizer(_build_npi_recognizer())
         _anonymizer = AnonymizerEngine()
     return _analyzer, _anonymizer
 

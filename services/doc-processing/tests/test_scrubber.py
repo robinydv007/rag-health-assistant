@@ -11,6 +11,27 @@ from presidio_anonymizer.entities import EngineResult
 from src.scrubber import _OPERATORS, ENTITIES, scrub
 
 
+class TestNpiRecognizer:
+    def test_recognizes_npi_with_prefix(self):
+        from src.scrubber import _build_npi_recognizer
+        recognizer = _build_npi_recognizer()
+        results = recognizer.analyze("Provider NPI: 1234567890", entities=["NPI"])
+        assert any(r.entity_type == "NPI" for r in results)
+
+    def test_recognizes_npi_label_variants(self):
+        from src.scrubber import _build_npi_recognizer
+        recognizer = _build_npi_recognizer()
+        for text in ["NPI#1234567890", "NPI 1234567890", "NPI:1234567890"]:
+            results = recognizer.analyze(text, entities=["NPI"])
+            assert any(r.entity_type == "NPI" for r in results), f"missed: {text}"
+
+    def test_does_not_flag_short_numbers(self):
+        from src.scrubber import _build_npi_recognizer
+        recognizer = _build_npi_recognizer()
+        results = recognizer.analyze("Patient ID 12345", entities=["NPI"])
+        assert not any(r.entity_type == "NPI" for r in results)
+
+
 class TestScrubberConfig:
     def test_all_required_entities_declared(self):
         required = {
