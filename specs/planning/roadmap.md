@@ -13,7 +13,7 @@ A fully HIPAA-compliant RAG knowledge assistant that gives any healthcare staff 
 | Version | Phase | Key Deliverables | Target |
 |---------|-------|-----------------|--------|
 | v0.1.0 | Phase 0 — Bootstrap ✅ | Repo scaffold, contracts, local dev, CI pipeline | Sprint 1 |
-| v0.2.0 | Phase 1 — Core Services | Chat + Uploader + Doc Processing end-to-end | Sprint 2–3 |
+| v0.2.0 | Phase 1 — Core Services ✅ | Chat + Uploader + Doc Processing end-to-end | Sprint 2–3 |
 | v0.3.0 | Phase 2 — Embedding & Indexing | Full pipeline: embed → index, VectorDB queryable | Sprint 4–5 |
 | v0.4.0 | Phase 3 — Admin & LLM Router | Admin ops, zero-downtime re-index, LLM fallback | Sprint 6 |
 | v0.5.0 | Phase 4 — Observability & Hardening | Prometheus, Grafana, Jaeger, ELK, load testing | Sprint 7 |
@@ -41,7 +41,7 @@ Deliverables:
 **Goal**: A user can ask a question and get an answer; a user can upload a document and see it enter the pipeline.
 
 Deliverables:
-- Chat Service: query expand → hybrid search → rerank → LLM call → SSE stream
+- Chat Service: query expand → hybrid search → rerank → LLM call → JSON response
 - Uploader Service: file upload → S3 → PostgreSQL → SQS 1 publish
 - Doc Processing: SQS 1 consumer → PII scrub → chunk → SQS 2 publish
 - Query audit log writing to PostgreSQL

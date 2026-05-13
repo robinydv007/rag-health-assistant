@@ -1,13 +1,41 @@
-"""Uploader Service — accepts document uploads, writes to S3, publishes to SQS 1."""
+"""Uploader Service — accepts document uploads, stores in S3, publishes to SQS 1."""
 
+import logging
 import uuid
+from datetime import datetime, timezone
 
-from fastapi import FastAPI, File, Form, UploadFile
+import boto3
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from shared.clients.s3_client import make_s3_client
+from shared.config.settings import BaseServiceSettings
 from shared.models.document import DocType
+from shared.models.messages import SQS1Message
 
-app = FastAPI(title="Uploader Service", version="0.1.0")
+from .db import get_session
+
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="Uploader Service", version="0.2.0")
+
+_settings = BaseServiceSettings()
+
+_s3 = make_s3_client(
+    bucket=_settings.s3_bucket,
+    region=_settings.aws_region,
+    endpoint_url=_settings.s3_endpoint_url,
+    minio_user=_settings.minio_root_user if _settings.s3_endpoint_url else None,
+    minio_password=_settings.minio_root_password if _settings.s3_endpoint_url else None,
+)
+
+_ALLOWED_CONTENT_TYPES = frozenset({
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "text/plain",
+})
 
 
 @app.get("/health")
@@ -20,19 +48,91 @@ async def ingest(
     file: UploadFile = File(...),
     title: str = Form(...),
     doc_type: DocType = Form(...),
+    uploaded_by: str = Form(...),
     target_index: str = Form("live"),
+    session: AsyncSession = Depends(get_session),
 ) -> JSONResponse:
-    # Phase 0 stub — validates input shape, returns 202 with mock IDs
-    # Phase 1: upload to S3 → insert PG record → publish SQS 1
-    job_id = str(uuid.uuid4())
-    doc_id = str(uuid.uuid4())
+    if file.content_type not in _ALLOWED_CONTENT_TYPES:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Unsupported file type '{file.content_type}'. "
+                "Allowed types: application/pdf, "
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document, "
+                "text/plain."
+            ),
+        )
+
+    doc_id = uuid.uuid4()
+    job_id = uuid.uuid4()
+    s3_key = f"{_settings.s3_raw_prefix}/{doc_id}/{file.filename}"
+    now = datetime.now(timezone.utc)
+
+    data = await file.read()
+
+    try:
+        await _s3.upload(s3_key, data, file.content_type)
+    except Exception as exc:
+        logger.error("S3 upload failed for doc_id=%s: %s", doc_id, exc)
+        raise HTTPException(status_code=500, detail=f"S3 upload failed: {exc}") from exc
+
+    try:
+        await session.execute(
+            text("""
+                INSERT INTO documents
+                    (doc_id, job_id, title, doc_type, s3_key, content_type,
+                     uploaded_by, target_index, status, created_at, updated_at)
+                VALUES
+                    (:doc_id, :job_id, :title, :doc_type, :s3_key, :content_type,
+                     :uploaded_by, :target_index, 'pending', :now, :now)
+            """),
+            {
+                "doc_id": str(doc_id),
+                "job_id": str(job_id),
+                "title": title,
+                "doc_type": doc_type.value,
+                "s3_key": s3_key,
+                "content_type": file.content_type,
+                "uploaded_by": uploaded_by,
+                "target_index": target_index,
+                "now": now,
+            },
+        )
+        await session.commit()
+    except Exception as exc:
+        await session.rollback()
+        logger.error("DB insert failed for doc_id=%s: %s", doc_id, exc)
+        raise HTTPException(status_code=500, detail=f"Database insert failed: {exc}") from exc
+
+    msg = SQS1Message(
+        doc_id=str(doc_id),
+        s3_key=s3_key,
+        content_type=file.content_type,
+        uploaded_by=uploaded_by,
+        target_index=target_index,
+        job_id=str(job_id),
+        uploaded_at=now,
+    )
+    try:
+        sqs = boto3.client(
+            "sqs",
+            region_name=_settings.aws_region,
+            endpoint_url=_settings.aws_endpoint_url,
+        )
+        sqs.send_message(
+            QueueUrl=_settings.sqs_queue_1_url,
+            MessageBody=msg.model_dump_json(),
+        )
+    except Exception as exc:
+        logger.error("SQS 1 publish failed for doc_id=%s: %s", doc_id, exc)
+        raise HTTPException(status_code=500, detail=f"SQS publish failed: {exc}") from exc
+
     return JSONResponse(
         status_code=202,
         content={
-            "job_id": job_id,
-            "doc_id": doc_id,
+            "job_id": str(job_id),
+            "doc_id": str(doc_id),
             "status": "pending",
             "status_url": f"/api/v1/knowledge/history?doc_id={doc_id}",
-            "stub": True,
         },
     )

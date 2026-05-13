@@ -1,0 +1,312 @@
+# Medical abbreviation and synonym dictionary for query expansion.
+# Format: abbreviation/short_form: [list of equivalent terms]
+# Used by query_expander.py to widen search coverage.
+
+# ─── Cardiovascular ────────────────────────────────────────────────────────────
+MI:
+  - myocardial infarction
+  - heart attack
+  - acute MI
+  - AMI
+AMI:
+  - acute myocardial infarction
+  - heart attack
+  - MI
+CHF:
+  - congestive heart failure
+  - heart failure
+  - cardiac failure
+HF:
+  - heart failure
+  - cardiac failure
+  - CHF
+HTN:
+  - hypertension
+  - high blood pressure
+  - elevated blood pressure
+AF:
+  - atrial fibrillation
+  - AFib
+  - a-fib
+AFib:
+  - atrial fibrillation
+  - AF
+  - a-fib
+CAD:
+  - coronary artery disease
+  - ischemic heart disease
+  - IHD
+IHD:
+  - ischemic heart disease
+  - coronary artery disease
+  - CAD
+PE:
+  - pulmonary embolism
+  - pulmonary thromboembolism
+DVT:
+  - deep vein thrombosis
+  - deep venous thrombosis
+VTE:
+  - venous thromboembolism
+  - DVT
+  - PE
+
+# ─── Endocrine ────────────────────────────────────────────────────────────────
+DM:
+  - diabetes mellitus
+  - diabetes
+DM1:
+  - type 1 diabetes
+  - type 1 diabetes mellitus
+  - T1DM
+  - insulin-dependent diabetes
+DM2:
+  - type 2 diabetes
+  - type 2 diabetes mellitus
+  - T2DM
+  - non-insulin-dependent diabetes
+T1DM:
+  - type 1 diabetes mellitus
+  - DM1
+  - insulin-dependent diabetes
+T2DM:
+  - type 2 diabetes mellitus
+  - DM2
+  - non-insulin-dependent diabetes
+HbA1c:
+  - glycated hemoglobin
+  - hemoglobin A1c
+  - A1c
+  - glycohemoglobin
+TSH:
+  - thyroid stimulating hormone
+  - thyrotropin
+hypothyroidism:
+  - underactive thyroid
+  - thyroid deficiency
+hyperthyroidism:
+  - overactive thyroid
+  - thyrotoxicosis
+
+# ─── Pulmonary ────────────────────────────────────────────────────────────────
+COPD:
+  - chronic obstructive pulmonary disease
+  - emphysema
+  - chronic bronchitis
+SOB:
+  - shortness of breath
+  - dyspnea
+  - breathlessness
+  - difficulty breathing
+dyspnea:
+  - shortness of breath
+  - SOB
+  - breathlessness
+URI:
+  - upper respiratory infection
+  - upper respiratory tract infection
+  - common cold
+URTI:
+  - upper respiratory tract infection
+  - URI
+  - common cold
+pneumonia:
+  - lung infection
+  - pulmonary infection
+  - pneumonitis
+
+# ─── Renal ────────────────────────────────────────────────────────────────────
+CKD:
+  - chronic kidney disease
+  - chronic renal disease
+  - renal insufficiency
+AKI:
+  - acute kidney injury
+  - acute renal failure
+  - ARF
+ARF:
+  - acute renal failure
+  - acute kidney injury
+  - AKI
+eGFR:
+  - estimated glomerular filtration rate
+  - glomerular filtration rate
+  - GFR
+UTI:
+  - urinary tract infection
+  - bladder infection
+  - cystitis
+
+# ─── Neurology ────────────────────────────────────────────────────────────────
+CVA:
+  - cerebrovascular accident
+  - stroke
+  - brain attack
+TIA:
+  - transient ischemic attack
+  - mini-stroke
+  - transient stroke
+MS:
+  - multiple sclerosis
+  - demyelinating disease
+LOC:
+  - loss of consciousness
+  - syncope
+  - fainting
+
+# ─── Oncology ─────────────────────────────────────────────────────────────────
+CA:
+  - cancer
+  - carcinoma
+  - malignancy
+  - neoplasm
+chemo:
+  - chemotherapy
+  - cytotoxic therapy
+  - cancer treatment
+XRT:
+  - radiation therapy
+  - radiotherapy
+  - radiation treatment
+
+# ─── Gastrointestinal ─────────────────────────────────────────────────────────
+GI:
+  - gastrointestinal
+  - gastrointestinal tract
+  - digestive
+GERD:
+  - gastroesophageal reflux disease
+  - acid reflux
+  - reflux esophagitis
+IBD:
+  - inflammatory bowel disease
+  - Crohn's disease
+  - ulcerative colitis
+IBS:
+  - irritable bowel syndrome
+  - functional bowel disorder
+N/V:
+  - nausea and vomiting
+  - nausea/vomiting
+  - emesis
+
+# ─── Medications & Pharmacology ───────────────────────────────────────────────
+NSAID:
+  - non-steroidal anti-inflammatory drug
+  - anti-inflammatory
+  - ibuprofen
+  - naproxen
+  - diclofenac
+ACE inhibitor:
+  - ACE-I
+  - angiotensin converting enzyme inhibitor
+  - lisinopril
+  - enalapril
+  - ramipril
+ARB:
+  - angiotensin receptor blocker
+  - angiotensin II receptor antagonist
+  - losartan
+  - valsartan
+statin:
+  - HMG-CoA reductase inhibitor
+  - cholesterol-lowering drug
+  - atorvastatin
+  - simvastatin
+  - rosuvastatin
+anticoagulant:
+  - blood thinner
+  - warfarin
+  - heparin
+  - DOAC
+  - direct oral anticoagulant
+DOAC:
+  - direct oral anticoagulant
+  - novel oral anticoagulant
+  - NOAC
+  - apixaban
+  - rivaroxaban
+  - dabigatran
+
+# ─── Lab Values ───────────────────────────────────────────────────────────────
+CBC:
+  - complete blood count
+  - full blood count
+  - FBC
+BMP:
+  - basic metabolic panel
+  - basic chemistry panel
+CMP:
+  - comprehensive metabolic panel
+LFT:
+  - liver function tests
+  - liver function panel
+  - hepatic panel
+INR:
+  - international normalized ratio
+  - prothrombin time ratio
+  - PT/INR
+WBC:
+  - white blood cell count
+  - leukocyte count
+  - white cell count
+Hgb:
+  - hemoglobin
+  - haemoglobin
+Hct:
+  - hematocrit
+  - packed cell volume
+  - PCV
+BUN:
+  - blood urea nitrogen
+  - urea nitrogen
+Cr:
+  - creatinine
+  - serum creatinine
+
+# ─── Clinical Settings & Procedures ──────────────────────────────────────────
+ED:
+  - emergency department
+  - emergency room
+  - ER
+  - A&E
+ICU:
+  - intensive care unit
+  - critical care unit
+  - CCU
+OR:
+  - operating room
+  - operating theatre
+  - surgical suite
+CPR:
+  - cardiopulmonary resuscitation
+  - resuscitation
+  - cardiac resuscitation
+IV:
+  - intravenous
+  - intravenous therapy
+  - IV access
+  - IV line
+BP:
+  - blood pressure
+  - arterial pressure
+HR:
+  - heart rate
+  - pulse rate
+  - pulse
+O2:
+  - oxygen
+  - oxygen saturation
+  - SpO2
+SpO2:
+  - oxygen saturation
+  - pulse oximetry
+  - O2 saturation
+RR:
+  - respiratory rate
+  - breathing rate
+  - breaths per minute
+Temp:
+  - temperature
+  - body temperature
+  - fever

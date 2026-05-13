@@ -66,3 +66,48 @@ Affects-specs: specs/architecture/services.md#chat-service
 Detail: A YAML lookup of ~100–200 medical abbreviations and synonyms chosen over LLM-based expansion. Zero latency, no API cost, deterministic behavior. LLM-based expansion can be added later as part of ENH-002 if static dict proves insufficient after Phase 2 search quality evaluation (FEAT-025).
 
 ---
+
+### [NOTE] 2026-05-13 — Phase 1 formally started
+
+Topics: phase-planning, phase-1-core-services
+Affects-phases: phase-1-core-services
+Affects-specs: specs/status.md, specs/phases/README.md
+Detail: Phase 1 — Core Services started via /start-phase. Branch `phase-1-core-services` created. No P0/P1 bugs in backlog. Implementation begins with Group 0 (infrastructure + shared prerequisites), then Groups 1–3 in parallel (Uploader, Doc Processing, Chat Service), then Group 4 (wiring + integration), then Group 5 (verification).
+
+---
+
+### [DECISION] 2026-05-13 — Per-service pytest invocation with PYTHONPATH to avoid `src` namespace collision
+
+Topics: testing, ci, pytest, python-path
+Affects-phases: phase-1-core-services
+Affects-specs: none
+Detail: All three services have a `src/` package. Running them in a single pytest process causes the first conftest.py's `src/` to shadow the others. Fixed by splitting CI into three separate pytest invocations, each with `PYTHONPATH=services/<svc>`. Root pyproject.toml testpaths reduced to `["tests"]` (shared only). Per-service conftest.py still handles local single-service runs.
+
+---
+
+### [NOTE] 2026-05-13 — Fixed doc-processing container crash: relative import error
+
+Topics: doc-processing, docker, python-imports
+Affects-phases: phase-1-core-services
+Affects-specs: none
+Detail: `doc-processing` crashed on startup with `ImportError: attempted relative import with no known parent package`. Root cause: Dockerfile ran `python src/main.py` (script mode), but main.py uses relative imports (`from .chunker import ...`). Fixed by changing CMD to `python -m src.main` so Python treats src as a package.
+
+---
+
+### [NOTE] 2026-05-13 — Group 5 verification complete (unit + lint + types); Groups 0–3 fully implemented
+
+Topics: verification, ruff, mypy, pytest, group-5
+Affects-phases: phase-1-core-services
+Affects-specs: none
+Detail: ruff check . → clean; mypy shared/ → 14 files, no issues; unit tests pass per-service (doc-processing: 15, chat-service: 10; uploader-service requires fastapi which is not in local venv but passes in CI). tiktoken made lazy to avoid import-time network download; SearchResult extracted to models.py so reranker tests run without weaviate installed locally. Group 4 (Docker wiring) deferred — requires docker-compose up, not runnable in current sandbox.
+
+---
+
+### [SCOPE_CHANGE] 2026-05-13 — /ask returns full JSON response; SSE moved to backlog as ENH-006
+
+Topics: chat-service, sse, api-response, scope
+Affects-phases: phase-1-core-services, phase-2-embedding-indexing
+Affects-specs: specs/architecture/api-reference.md#post-knowledgeask
+Detail: The /ask endpoint was changed from SSE streaming (StreamingResponse) to a single complete JSON response (`{"answer": str, "sources": [...]}}`). SSE streaming adds client complexity for no immediate benefit in Phase 1–2. The LLM is still called with streaming internally — tokens are collected and joined before returning. SSE added to backlog as ENH-006 (P3) for future consideration. `llm_caller.py` refactored from async generator `stream_answer()` to coroutine `get_answer()` returning `(str, list[SourceCitation])`. Tests updated accordingly. API reference spec to be updated at phase completion via /sync-docs.
+
+---
