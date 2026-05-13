@@ -1,8 +1,8 @@
 # Project Status
 
 > **Last Updated**: 2026-05-13
-> **Current Phase**: Phase 2 — Embedding & Indexing (`planned`)
-> **Latest Release**: v0.2.0 (Phase 1 complete)
+> **Current Phase**: Phase 3 — Admin & LLM Router (`not started`)
+> **Latest Release**: v0.3.0 (Phase 2 complete)
 > **Health**: On Track
 
 ## Summary
@@ -15,14 +15,11 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 |-------|------|--------|---------|
 | 0 | Bootstrap | Complete | v0.1.0 |
 | 1 | Core Services | Complete | v0.2.0 |
+| 2 | Embedding & Indexing | Complete | v0.3.0 |
 
 ## Active Phase
 
-| Phase | Name | Status | Progress |
-|-------|------|--------|----------|
-| 2 | Embedding & Indexing | Planned | 0% |
-
-**Phase 2 Goal**: Full document pipeline with real BioGPT/SciBERT embeddings stored in Weaviate — upload → process → embed → index → queryable.
+_(none — Phase 3 not yet started; run `/start-phase` to begin Admin & LLM Router)_
 
 ## Upcoming Phases
 
@@ -46,10 +43,9 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 ## Next Actions
 
-1. Run `/brainstorm-phase` to design Phase 2 — Embedding & Indexing
-2. Implement Embedding Service: BioGPT/SciBERT batch inference, SQS 2 → SQS 3
-3. Implement Indexing Service: SQS 3 → Weaviate write + PG status update
-4. Implement Indexing Coordinator: chunk completion tracking
+1. Start Phase 3 — Admin & LLM Router (`/start-phase`)
+2. FEAT-025: Build search relevance evaluation set (deferred from Phase 2)
+3. ENH-002: Consider cross-encoder re-ranking for Phase 3
 
 ## Key Decisions Made
 
@@ -58,6 +54,7 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 | [0001](decisions/0001-microservices-over-monolith.md) | Microservices — one service per pipeline stage | 2026-05-12 |
 | [0002](decisions/0002-sqs-async-pipeline.md) | SQS async pipeline with DLQs for document processing | 2026-05-12 |
 | [0003](decisions/0003-medical-embedding-models.md) | BioGPT/SciBERT for domain-specific medical embeddings | 2026-05-12 |
+| [0003a](decisions/0003a-biomedbert-hf-inference-api.md) | OpenAI text-embedding-3-large replaces HF BiomedBERT (not production-ready) | 2026-05-13 |
 | [0004](decisions/0004-zero-downtime-reindex.md) | Shadow index + alias swap for zero-downtime re-indexing | 2026-05-12 |
 | [0005](decisions/0005-ecs-fargate-over-eks.md) | ECS Fargate over EKS for container orchestration | 2026-05-12 |
 | [0006](decisions/0006-vector-db-weaviate.md) | Weaviate for vector DB — hybrid search, self-hosted, alias swap | 2026-05-12 |
@@ -71,3 +68,4 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 - 2026-05-12: Phase 0 complete — shared models, Alembic migrations, 6 service skeletons, Dockerfiles, docker-compose, init services, unit tests, GitHub Actions CI
 - 2026-05-13: Phase 1 — Core Services started; branch `phase-1-core-services` created
 - 2026-05-13: v0.2.0 released — Phase 1 complete: Uploader, Doc Processing, Chat Service end-to-end; 78 unit tests; full Docker stack verified
+- 2026-05-13: Phase 2 — Embedding & Indexing complete: Embedding Service, Indexing Service, DLQ monitor, OpenAI text-embedding-3-large (3072-dim), 57 unit tests, all services healthy

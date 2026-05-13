@@ -112,8 +112,23 @@ async def _anthropic_stream(system_prompt: str, user_prompt: str) -> AsyncIterat
             yield text
 
 
+async def _mock_stream(system_prompt: str, user_prompt: str) -> AsyncIterator[str]:
+    """Local-dev mock — no network call, no API key required.
+
+    Yields a clearly-labelled canned response as multiple tokens to exercise
+    the streaming code path end-to-end. Set LLM_PRIMARY=mock to use.
+    """
+    for token in [
+        "[LOCAL DEV — no API key] ",
+        "This is a placeholder answer. ",
+        "Set OPENAI_API_KEY and LLM_PRIMARY=openai in .env for real responses.",
+    ]:
+        yield token
+
+
 # ── Register providers ───────────────────────────────────────────────────────
 # To add a new provider: implement _<name>_stream above and add it here.
 
 _PROVIDERS["openai"] = _openai_stream
 _PROVIDERS["anthropic"] = _anthropic_stream
+_PROVIDERS["mock"] = _mock_stream

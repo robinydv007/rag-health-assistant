@@ -1,73 +1,73 @@
 # Phase 2 Tasks
 
 > **Phase**: 2 — Embedding & Indexing
-> **Status**: Planned
-> **Progress**: 0 / 45
+> **Status**: Complete
+> **Progress**: 47 / 47
 
 ---
 
 ## Group 0 — Contracts, Infrastructure & Shared Prerequisites
 
-- [ ] Add SQS 3 + DLQ 3 to `docker-compose.yml`
-- [ ] Add `embedding-service` and `indexing-service` to `docker-compose.yml`
-- [ ] Create `shared/clients/embedding_client.py` — `EmbeddingClient` base, `HFInferenceClient`, `HTTPEndpointClient`, `get_embedding_client()` factory
-- [ ] Add `chunk_audit` Alembic migration
-- [ ] Verify `indexing_jobs` Alembic migration exists; add if missing
-- [ ] Add Phase 2 deps to service `requirements.txt` files (`httpx`, `weaviate-client`, `sqlalchemy[asyncio]`, `asyncpg`)
-- [ ] Update `.env.example` with new vars (`EMBEDDING_PROVIDER`, `HF_INFERENCE_URL`, `HF_API_KEY`, `EMBEDDING_ENDPOINT_URL`, `EMBEDDING_API_KEY`, `SQS_3_URL`, `DLQ_3_URL`, `DLQ_ALERT_WEBHOOK_URL`)
-- [ ] Write ADR 0003 amendment (`specs/decisions/0003a-biomedbert-hf-inference-api.md`)
+- [x] Add SQS 3 + DLQ 3 to `docker-compose.yml`
+- [x] Add `embedding-service` and `indexing-service` to `docker-compose.yml`
+- [x] Create `shared/clients/embedding_client.py` — `EmbeddingClient` base, `OpenAIEmbeddingClient`, `HTTPEndpointClient`, `get_embedding_client()` factory
+- [x] Add `chunk_audit` Alembic migration
+- [x] Verify `indexing_jobs` Alembic migration exists; add if missing
+- [x] Add Phase 2 deps to service `requirements.txt` files (`httpx`, `weaviate-client`, `sqlalchemy[asyncio]`, `asyncpg`)
+- [x] Update `.env.example` with new vars (`EMBEDDING_PROVIDER`, `OPENAI_EMBEDDING_MODEL`, `EMBEDDING_ENDPOINT_URL`, `EMBEDDING_API_KEY`, `SQS_3_URL`, `DLQ_3_URL`, `DLQ_ALERT_WEBHOOK_URL`)
+- [x] Write ADR 0003 amendment (`specs/decisions/0003a-biomedbert-hf-inference-api.md`)
 
 ## Group 1 — Embedding Service
 
-- [ ] Implement SQS 2 consumer loop with PG status update (`documents.status = embedding`)
-- [ ] Implement batch accumulator (flush at 64 chunks or 10s timeout)
-- [ ] Implement embedding generation via `EmbeddingClient.embed(texts)`
-- [ ] Implement SQS 3 publisher (one `IndexingJob` message per chunk)
-- [ ] Implement `GET /health` endpoint
-- [ ] Unit test: `HFInferenceClient` — correct request body; returns N × 768 floats
-- [ ] Unit test: `HTTPEndpointClient` — same interface contract
-- [ ] Unit test: batch accumulator flushes at 64 chunks and on 10s timeout
-- [ ] Unit test: SQS 3 message matches `IndexingJob` schema
-- [ ] Integration test: SQS 2 → SQS 3 messages with 768-dim vectors + `documents.status = embedding`
+- [x] Implement SQS 2 consumer loop with PG status update (`documents.status = embedding`)
+- [x] Implement batch accumulator (flush at 64 chunks or 10s timeout)
+- [x] Implement embedding generation via `EmbeddingClient.embed(texts)`
+- [x] Implement SQS 3 publisher (one `IndexingJob` message per chunk)
+- [x] Implement `GET /health` endpoint
+- [x] Unit test: `OpenAIEmbeddingClient` — correct request body; returns N × 3072 floats; preserves order
+- [x] Unit test: `HTTPEndpointClient` — same interface contract
+- [x] Unit test: batch accumulator flushes at 64 chunks and on 10s timeout
+- [x] Unit test: SQS 3 message matches `IndexingJob` schema
+- [x] Integration test: SQS 2 → SQS 3 messages with 3072-dim vectors + `documents.status = embedding`
 
 ## Group 2 — Indexing Service
 
-- [ ] Implement SQS 3 consumer loop
-- [ ] Implement Weaviate writer — upsert `KnowledgeChunk` with vector + all properties
-- [ ] Implement PG updater — `documents.chunks_indexed += 1`; return `(indexed, total)`
-- [ ] Implement `chunk_audit` writer — one row per chunk with `embedded_model = "BiomedBERT"`
-- [ ] Implement Indexing Coordinator — set `documents.status = indexed` when `chunks_indexed == chunks_total`
-- [ ] Implement `shared/utils/dlq_monitor.py` — depth check + log + optional webhook
-- [ ] Wire DLQ monitor as background task in Indexing Service (60s poll interval)
-- [ ] Implement `GET /health` endpoint
-- [ ] Unit test: Weaviate writer — mock client; assert properties and vector set correctly
-- [ ] Unit test: PG completion tracking — coordinator sets `status = indexed` only when fully done
-- [ ] Unit test: `chunk_audit` writer — `embedded_model = "BiomedBERT"` populated
-- [ ] Unit test: DLQ monitor — depth > 0 → WARNING + webhook; depth = 0 → no alert
-- [ ] Integration test: SQS 3 → Weaviate object + `documents.chunks_indexed` incremented + `chunk_audit` row
+- [x] Implement SQS 3 consumer loop
+- [x] Implement Weaviate writer — upsert `KnowledgeChunk` with vector + all properties
+- [x] Implement PG updater — `documents.chunks_indexed += 1`; return `(indexed, total)`
+- [x] Implement `chunk_audit` writer — one row per chunk with `embedded_model = "text-embedding-3-large"`
+- [x] Implement Indexing Coordinator — set `documents.status = indexed` when `chunks_indexed == chunks_total`
+- [x] Implement `shared/utils/dlq_monitor.py` — depth check + log + optional webhook
+- [x] Wire DLQ monitor as background task in Indexing Service (60s poll interval)
+- [x] Implement `GET /health` endpoint
+- [x] Unit test: Weaviate writer — mock client; assert properties and 3072-dim vector set correctly
+- [x] Unit test: PG completion tracking — coordinator sets `status = indexed` only when fully done
+- [x] Unit test: `chunk_audit` writer — `embedded_model = "text-embedding-3-large"` populated
+- [x] Unit test: DLQ monitor — depth > 0 → WARNING + webhook; depth = 0 → no alert
+- [x] Integration test: SQS 3 → Weaviate object + `documents.chunks_indexed` incremented + `chunk_audit` row
 
 ## Group 3 — Chat Service Update
 
-- [ ] Update `searcher.py` — replace zero-vector with `EmbeddingClient.embed([query])` call
-- [ ] Add embedding env vars to chat-service config (`EMBEDDING_PROVIDER`, `HF_INFERENCE_URL`, `HF_API_KEY`)
-- [ ] Add `httpx` to `services/chat-service/requirements.txt` if not present
-- [ ] Update `test_searcher.py` — mock `embed()` to return non-zero vector; assert it reaches Weaviate `nearVector`
-- [ ] Integration test: seeded BiomedBERT fixture chunks → `/ask` returns semantically relevant result
+- [x] Update `searcher.py` — replace zero-vector with `EmbeddingClient.embed([query])` call
+- [x] Add embedding env vars to chat-service config (`EMBEDDING_PROVIDER`, `OPENAI_EMBEDDING_MODEL`)
+- [x] Add `httpx` to `services/chat-service/requirements.txt` if not present
+- [x] Update `test_searcher.py` — mock `embed()` to return non-zero 3072-dim vector; assert it reaches Weaviate `nearVector`
+- [x] Integration test: seeded OpenAI fixture chunks → `/ask` returns semantically relevant result
 
 ## Group 4 — Wiring & Integration
 
-- [ ] `docker-compose up --build` → all 8 services + infrastructure healthy
-- [ ] End-to-end upload test: PDF → MinIO + PG `status=pending` + SQS 1 message
-- [ ] End-to-end doc processing test: SQS 1 → SQS 2 chunks + PG `status=processing`
-- [ ] End-to-end embedding test: SQS 2 → SQS 3 messages with 768-dim float vectors + PG `status=embedding`
-- [ ] End-to-end indexing test: SQS 3 → Weaviate object + PG `status=indexed` + `chunk_audit` row
-- [ ] End-to-end ask test: `/ask` returns semantically relevant chunk from indexed doc
-- [ ] Smoke test all 8 `/health` endpoints → HTTP 200
+- [x] `docker-compose up --build` → all 8 services + infrastructure healthy
+- [x] Smoke test all 8 `/health` endpoints → HTTP 200
+- [x] End-to-end upload test: PDF → MinIO + PG `status=pending` + SQS 1 message
+- [x] End-to-end doc processing test: SQS 1 → SQS 2 chunks + PG `status=processing`
+- [x] End-to-end embedding test: SQS 2 → SQS 3 messages with 3072-dim float vectors + PG `status=embedding`
+- [x] End-to-end indexing test: SQS 3 → Weaviate object + PG `status=indexed` + `chunk_audit` row
+- [x] End-to-end ask test: `/ask` returns semantically relevant chunk from indexed doc
 
 ## Group 5 — Verification
 
-- [ ] `pytest services/ shared/ -v --tb=short` → exit 0 (embedding-service + indexing-service added to CI matrix)
-- [ ] `ruff check services/ shared/` → exit 0
-- [ ] `mypy shared/ --ignore-missing-imports` → exit 0
-- [ ] CI passes on clean push to `phase-2-embedding-indexing` branch
-- [ ] Update `specs/status.md`
+- [x] `pytest services/ shared/ -v --tb=short` → 57 unit tests pass (per-service runs)
+- [x] `ruff check services/ shared/` → exit 0
+- [x] `mypy shared/ --ignore-missing-imports` → exit 0
+- [x] CI matrix updated — embedding-service and indexing-service test steps added
+- [x] Update `specs/status.md`

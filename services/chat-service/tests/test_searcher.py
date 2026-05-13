@@ -1,14 +1,14 @@
 """Unit tests for the Weaviate hybrid searcher.
 
-Weaviate client is mocked — these tests verify the query construction
-and result mapping logic without requiring a live Weaviate instance.
+Weaviate client and embedding client are mocked — these tests verify the
+query construction and result mapping logic without requiring live services.
 """
 
 import asyncio
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from src.searcher import _ALPHA, _ZERO_VECTOR, SearchResult, hybrid_search
+from src.searcher import _ALPHA, SearchResult, hybrid_search
 
 
 def _run(coro):
@@ -29,7 +29,7 @@ def _make_mock_weaviate_object(doc_id: str, text: str, title: str, page: int, sc
     return obj
 
 
-def _make_mock_client(objects: list) -> MagicMock:
+def _make_mock_weaviate_client(objects: list) -> MagicMock:
     mock_collection = MagicMock()
     mock_response = MagicMock()
     mock_response.objects = objects
@@ -42,6 +42,9 @@ def _make_mock_client(objects: list) -> MagicMock:
     return mock_client
 
 
+_FAKE_VECTOR = [0.42] * 3072
+
+
 @pytest.fixture()
 def two_objects():
     return [
@@ -52,40 +55,60 @@ def two_objects():
 
 class TestHybridSearch:
     def test_returns_list_of_search_results(self, two_objects):
-        mock_client = _make_mock_client(two_objects)
-        with patch("src.searcher._make_client", return_value=mock_client):
+        mock_weaviate = _make_mock_weaviate_client(two_objects)
+        mock_embed = AsyncMock(return_value=[_FAKE_VECTOR])
+        with patch("src.searcher._make_client", return_value=mock_weaviate), \
+             patch("src.searcher._embedding_client") as mock_ec:
+            mock_ec.embed = mock_embed
             results = _run(hybrid_search("aspirin dosing", []))
         assert len(results) == 2
         assert all(isinstance(r, SearchResult) for r in results)
 
-    def test_zero_vector_used(self, two_objects):
-        mock_client = _make_mock_client(two_objects)
-        with patch("src.searcher._make_client", return_value=mock_client):
-            _run(hybrid_search("query", []))
-        collection = mock_client.collections.get.return_value
+    def test_real_embedding_used_not_zero_vector(self, two_objects):
+        """embed() result is passed to Weaviate nearVector — not a zero-vector."""
+        mock_weaviate = _make_mock_weaviate_client(two_objects)
+        mock_embed = AsyncMock(return_value=[_FAKE_VECTOR])
+        with patch("src.searcher._make_client", return_value=mock_weaviate), \
+             patch("src.searcher._embedding_client") as mock_ec:
+            mock_ec.embed = mock_embed
+            _run(hybrid_search("aspirin dosing", []))
+
+        mock_embed.assert_awaited_once_with(["aspirin dosing"])
+        collection = mock_weaviate.collections.get.return_value
         call_kwargs = collection.query.hybrid.call_args.kwargs
-        assert call_kwargs["vector"] == _ZERO_VECTOR
+        assert call_kwargs["vector"] == _FAKE_VECTOR
+        # Verify it's NOT a zero vector
+        assert any(v != 0.0 for v in call_kwargs["vector"])
         assert call_kwargs["alpha"] == _ALPHA
 
     def test_synonym_terms_appended_to_query(self, two_objects):
-        mock_client = _make_mock_client(two_objects)
-        with patch("src.searcher._make_client", return_value=mock_client):
+        mock_weaviate = _make_mock_weaviate_client(two_objects)
+        mock_embed = AsyncMock(return_value=[_FAKE_VECTOR])
+        with patch("src.searcher._make_client", return_value=mock_weaviate), \
+             patch("src.searcher._embedding_client") as mock_ec:
+            mock_ec.embed = mock_embed
             _run(hybrid_search("MI", ["myocardial infarction", "heart attack"]))
-        collection = mock_client.collections.get.return_value
+        collection = mock_weaviate.collections.get.return_value
         query_str = collection.query.hybrid.call_args.kwargs["query"]
         assert "MI" in query_str
         assert "myocardial infarction" in query_str
         assert "heart attack" in query_str
 
     def test_score_mapped_from_metadata(self, two_objects):
-        mock_client = _make_mock_client(two_objects)
-        with patch("src.searcher._make_client", return_value=mock_client):
+        mock_weaviate = _make_mock_weaviate_client(two_objects)
+        mock_embed = AsyncMock(return_value=[_FAKE_VECTOR])
+        with patch("src.searcher._make_client", return_value=mock_weaviate), \
+             patch("src.searcher._embedding_client") as mock_ec:
+            mock_ec.embed = mock_embed
             results = _run(hybrid_search("query", []))
         assert results[0].score == pytest.approx(0.9)
         assert results[1].score == pytest.approx(0.6)
 
     def test_empty_results(self):
-        mock_client = _make_mock_client([])
-        with patch("src.searcher._make_client", return_value=mock_client):
+        mock_weaviate = _make_mock_weaviate_client([])
+        mock_embed = AsyncMock(return_value=[_FAKE_VECTOR])
+        with patch("src.searcher._make_client", return_value=mock_weaviate), \
+             patch("src.searcher._embedding_client") as mock_ec:
+            mock_ec.embed = mock_embed
             results = _run(hybrid_search("unknown query", []))
         assert results == []

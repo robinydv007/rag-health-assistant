@@ -1,8 +1,9 @@
 # ADR 0003 — BioGPT/SciBERT for Domain-Specific Medical Embeddings
 
-> **Status**: accepted
+> **Status**: superseded
 > **Date**: 2026-05-12
 > **Supersedes**: N/A
+> **Superseded-By**: [ADR 0003a — OpenAI text-embedding-3-large (via BiomedBERT amendment)](0003a-biomedbert-hf-inference-api.md)
 
 ## Context
 

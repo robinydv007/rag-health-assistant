@@ -8,7 +8,7 @@ def test_base_settings_defaults():
     settings = BaseServiceSettings()
     assert settings.aws_region == "us-east-1"
     assert settings.weaviate_url == "http://localhost:8080"
-    assert settings.embedding_model == "biogpt"
+    assert settings.embedding_provider == "openai"
     assert settings.live_index_alias == "knowledge-live"
     assert settings.shadow_index_alias == "knowledge-shadow"
     assert settings.s3_raw_prefix == "raw-docs"

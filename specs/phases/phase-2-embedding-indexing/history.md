@@ -4,6 +4,24 @@
 
 ---
 
+### [ARCH_CHANGE] 2026-05-13 — SQS3Message (IndexingJob) extended with text field
+
+Topics: sqs, indexing, weaviate, hybrid-search
+Affects-phases: phase-2-embedding-indexing
+Affects-specs: specs/architecture/api-reference.md#sqs-3-indexing-job
+Detail: SQS3Message in shared/models/messages.py lacked a `text` field. Weaviate KnowledgeChunk stores `text` as a required property for BM25 hybrid search. Without it, only vector similarity works — keyword matching fails. Field added during Group 1 implementation. The api-reference.md spec needs updating at phase completion via /sync-docs.
+
+---
+
+### [NOTE] 2026-05-13 — Phase 2 started; branch phase-2-embedding-indexing created
+
+Topics: phase-planning, git, branch
+Affects-phases: phase-2-embedding-indexing
+Affects-specs: specs/status.md, specs/phases/README.md
+Detail: Phase 2 formally started. Branch `phase-2-embedding-indexing` created from `main`. All tracking files updated to `in-progress`. Group 0 (contracts, infrastructure, shared prerequisites) is the first work unit.
+
+---
+
 ### [NOTE] 2026-05-13 — Phase 2 brainstormed; scope locked
 
 Topics: phase-planning, scope, brainstorm
@@ -73,5 +91,32 @@ Topics: embedding, adr, architecture
 Affects-phases: phase-2-embedding-indexing
 Affects-specs: specs/decisions/0003-medical-embedding-models.md, specs/architecture/services.md#embedding-service
 Detail: ADR 0003 specified BioGPT/SciBERT on EC2 GPU. Phase 2 replaces this with BiomedBERT via HF Serverless API, removing the EC2 GPU requirement. Amendment `specs/decisions/0003a-biomedbert-hf-inference-api.md` to be written in Group 0 as a Group 0 deliverable. The S3 `models/biogpt/` and `models/scibert/` paths in the data model are now unused — note in amendment.
+
+---
+
+### [ARCH_CHANGE] 2026-05-13 — HuggingFace removed; switched to OpenAI text-embedding-3-large
+
+Topics: embedding, openai, architecture, provider-abstraction
+Affects-phases: phase-2-embedding-indexing
+Affects-specs: specs/architecture/services.md#embedding-service, specs/decisions/0003a-biomedbert-hf-inference-api.md
+Detail: HuggingFace BiomedBERT (via HF Serverless Inference API) was producing HTTP 400 Bad Request errors and is not production-ready. Replaced with OpenAI `text-embedding-3-large` (3072-dim vectors). `HFInferenceClient` and all HF env vars (`HF_INFERENCE_URL`, `HF_API_KEY`) removed entirely. Supported providers are now `openai` (default) and `http_endpoint` (self-hosted GPU). Vector dimension changes from 768 to 3072. `EMBEDDED_MODEL` constant updated to `"text-embedding-3-large"`.
+
+---
+
+### [FEATURE] 2026-05-13 — ENH-007: local-dev no-API-key mock mode implemented
+
+Topics: devex, mock, embedding, llm, testing
+Affects-phases: phase-2-embedding-indexing
+Affects-specs: none
+Detail: `MockEmbeddingClient` added to `shared/clients/embedding_client.py` — deterministic SHA-256-hashed 3072-dim unit-norm vectors, no network call, no API key. `_mock_stream` added to `shared/clients/llm_client.py` — yields a canned `[LOCAL DEV — no API key]` response. Both activated via `EMBEDDING_PROVIDER=mock` and `LLM_PRIMARY=mock`. `.env.example` documents the opt-in. 8 new unit tests (4 in embedding-service, 4 in root tests/) all pass. ENH-007 marked resolved.
+
+---
+
+### [NOTE] 2026-05-13 — Phase 2 Group 5 verification complete
+
+Topics: verification, testing, ruff, mypy, docker
+Affects-phases: phase-2-embedding-indexing
+Affects-specs: none
+Detail: All verification gates passed — ruff clean, mypy clean (16 files), 57 unit tests pass across embedding-service (10), indexing-service (12), chat-service (20), shared (15). All 8 Docker service containers healthy. Healthchecks switched from curl to python urllib (python:3.11-slim has no curl). Phase 2 implementation is complete.
 
 ---

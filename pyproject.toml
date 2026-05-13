@@ -3,6 +3,10 @@
 # by CI (with PYTHONPATH=services/<svc>) to avoid `src` namespace collision.
 testpaths = ["tests"]
 pythonpath = ["."]
+asyncio_mode = "strict"
+markers = [
+    "integration: requires live infrastructure (elasticmq, postgres, weaviate, minio)",
+]
 
 [tool.ruff]
 line-length = 100
