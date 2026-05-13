@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   # ─── User-facing services ────────────────────────────────────────────────────
   chat-service:
@@ -11,6 +9,8 @@ services:
     env_file: ../../.env
     environment:
       - AWS_ENDPOINT_URL=http://elasticmq:9324
+      - DATABASE_URL=postgresql+asyncpg://raghealth:raghealth_local@postgres:5432/raghealth
+      - WEAVIATE_URL=http://weaviate:8080
     depends_on:
       - postgres
       - weaviate
@@ -31,6 +31,8 @@ services:
     environment:
       - AWS_ENDPOINT_URL=http://elasticmq:9324
       - S3_ENDPOINT_URL=http://minio:9000
+      - DATABASE_URL=postgresql+asyncpg://raghealth:raghealth_local@postgres:5432/raghealth
+      - SQS_QUEUE_1_URL=http://elasticmq:9324/000000000000/doc-processing-queue
     depends_on:
       - postgres
       - elasticmq
@@ -50,6 +52,9 @@ services:
     environment:
       - AWS_ENDPOINT_URL=http://elasticmq:9324
       - S3_ENDPOINT_URL=http://minio:9000
+      - DATABASE_URL=postgresql+asyncpg://raghealth:raghealth_local@postgres:5432/raghealth
+      - SQS_QUEUE_1_URL=http://elasticmq:9324/000000000000/doc-processing-queue
+      - SQS_QUEUE_2_URL=http://elasticmq:9324/000000000000/embedding-queue
     depends_on:
       - postgres
       - elasticmq
@@ -63,6 +68,8 @@ services:
     env_file: ../../.env
     environment:
       - AWS_ENDPOINT_URL=http://elasticmq:9324
+      - SQS_QUEUE_2_URL=http://elasticmq:9324/000000000000/embedding-queue
+      - SQS_QUEUE_3_URL=http://elasticmq:9324/000000000000/indexing-queue
     depends_on:
       - elasticmq
     restart: unless-stopped
@@ -74,6 +81,8 @@ services:
     env_file: ../../.env
     environment:
       - AWS_ENDPOINT_URL=http://elasticmq:9324
+      - DATABASE_URL=postgresql+asyncpg://raghealth:raghealth_local@postgres:5432/raghealth
+      - SQS_QUEUE_3_URL=http://elasticmq:9324/000000000000/indexing-queue
     depends_on:
       - postgres
       - weaviate
@@ -117,7 +126,7 @@ services:
       retries: 5
 
   weaviate:
-    image: semitechnologies/weaviate:1.25.0
+    image: semitechnologies/weaviate:1.28.2
     ports:
       - "8080:8080"
       - "50051:50051"
@@ -144,7 +153,7 @@ services:
       - ../../infrastructure/elasticmq.conf:/opt/elasticmq.conf
 
   minio:
-    image: minio/minio:RELEASE.2024-05-01T01-11-10Z
+    image: minio/minio:latest
     command: server /data --console-address ":9001"
     ports:
       - "9000:9000"
@@ -161,7 +170,7 @@ services:
       retries: 5
 
   minio-init:
-    image: minio/mc:RELEASE.2024-05-03T03-08-28Z
+    image: minio/mc:latest
     depends_on:
       minio:
         condition: service_healthy
@@ -197,8 +206,9 @@ services:
     volumes:
       - ../../scripts/init-weaviate.sh:/init-weaviate.sh
     command: >
-      sh -c "apk add --no-cache bash curl &&
-             WEAVIATE_URL=http://weaviate:8080 bash /init-weaviate.sh"
+      sh -c "apk add --no-cache bash curl dos2unix &&
+             dos2unix -n /init-weaviate.sh /tmp/init-weaviate.sh &&
+             WEAVIATE_URL=http://weaviate:8080 bash /tmp/init-weaviate.sh"
     depends_on:
       weaviate:
         condition: service_healthy

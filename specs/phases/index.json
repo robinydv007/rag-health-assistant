@@ -14,7 +14,7 @@
       "name": "Core Services",
       "slug": "phase-1-core-services",
       "version": "v0.2.0",
-      "status": "in-progress",
+      "status": "complete",
       "path": "specs/phases/phase-1-core-services",
       "topics": ["chat-service", "uploader-service", "doc-processing", "minio", "s3", "presidio", "pii-scrubbing", "sqs", "json-response", "pdfplumber", "python-docx", "tiktoken", "chunking", "query-expansion", "medical-synonyms", "weaviate", "hybrid-search", "audit-log", "query-history", "postgresql", "sqlalchemy", "openai", "anthropic", "llm-client", "fastapi"]
     },

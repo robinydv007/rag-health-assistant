@@ -82,8 +82,8 @@ async def _write_audit_log(
                     (query_id, user_id, session_id, question, response, sources,
                      model_used, latency_ms, index_queried, created_at)
                 VALUES
-                    (:query_id, :user_id, :session_id, :question, :response, :sources::jsonb,
-                     :model_used, :latency_ms, 'live', :now)
+                    (:query_id, :user_id, :session_id, :question, :response,
+                     CAST(:sources AS jsonb), :model_used, :latency_ms, 'live', :now)
             """),
             {
                 "query_id": str(uuid.uuid4()),

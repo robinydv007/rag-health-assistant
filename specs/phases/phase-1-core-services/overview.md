@@ -1,7 +1,8 @@
 # Phase 1 — Core Services
 
 > **Version**: 1.0
-> **Status**: Planned
+> **Status**: Complete
+> **Released**: v0.2.0 (2026-05-13)
 > **Branch**: `phase-1-core-services`
 > **Follows**: Phase 0 — Bootstrap
 

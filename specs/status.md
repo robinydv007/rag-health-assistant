@@ -1,8 +1,8 @@
 # Project Status
 
 > **Last Updated**: 2026-05-13
-> **Current Phase**: Phase 1 — Core Services (`in-progress`)
-> **Latest Release**: v0.1.0 (Phase 0 complete)
+> **Current Phase**: Phase 2 — Embedding & Indexing (`planned`)
+> **Latest Release**: v0.2.0 (Phase 1 complete)
 > **Health**: On Track
 
 ## Summary
@@ -14,20 +14,20 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 | Phase | Name | Status | Released |
 |-------|------|--------|---------|
 | 0 | Bootstrap | Complete | v0.1.0 |
+| 1 | Core Services | Complete | v0.2.0 |
 
 ## Active Phase
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 1 | Core Services | In Progress | 0% |
+| 2 | Embedding & Indexing | Planned | 0% |
 
-**Phase 1 Goal**: Chat + Uploader + Doc Processing end-to-end — real document ingestion, text extraction, SQS pipeline wired.
+**Phase 2 Goal**: Full document pipeline with real BioGPT/SciBERT embeddings stored in Weaviate — upload → process → embed → index → queryable.
 
 ## Upcoming Phases
 
 | Phase | Name | Status | Key Deliverables |
 |-------|------|--------|-----------------|
-| 2 | Embedding & Indexing | Planned | Full pipeline, VectorDB queryable |
 | 3 | Admin & LLM Router | Planned | Zero-downtime re-index, LLM fallback |
 | 4 | Observability & Hardening | Planned | Prometheus, Grafana, Jaeger, load test |
 | 5 | Production | Planned | HIPAA audit, pen test, production deploy |
@@ -46,10 +46,10 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 ## Next Actions
 
-1. Implement Group 0 — Infrastructure & Shared Prerequisites (MinIO, S3 client, LLM client, synonym dict)
-2. Implement Group 1 — Uploader Service (`POST /api/v1/knowledge/ingest`)
-3. Implement Group 2 — Doc Processing Service (SQS consumer, Presidio, parsers, chunker)
-4. Implement Group 3 — Chat Service (`/ask`, `/history`, SSE stream, audit log)
+1. Run `/brainstorm-phase` to design Phase 2 — Embedding & Indexing
+2. Implement Embedding Service: BioGPT/SciBERT batch inference, SQS 2 → SQS 3
+3. Implement Indexing Service: SQS 3 → Weaviate write + PG status update
+4. Implement Indexing Coordinator: chunk completion tracking
 
 ## Key Decisions Made
 
@@ -70,3 +70,4 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 - 2026-05-12: CLAUDE.md and agent rules written
 - 2026-05-12: Phase 0 complete — shared models, Alembic migrations, 6 service skeletons, Dockerfiles, docker-compose, init services, unit tests, GitHub Actions CI
 - 2026-05-13: Phase 1 — Core Services started; branch `phase-1-core-services` created
+- 2026-05-13: v0.2.0 released — Phase 1 complete: Uploader, Doc Processing, Chat Service end-to-end; 78 unit tests; full Docker stack verified

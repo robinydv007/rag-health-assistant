@@ -9,4 +9,5 @@ RUN pip install --no-cache-dir -r requirements.txt && \
 COPY shared/ ./shared/
 COPY services/doc-processing/src/ ./src/
 
-CMD ["python", "src/main.py"]
+ENV PYTHONPATH=/app
+CMD ["python", "-m", "src.main"]

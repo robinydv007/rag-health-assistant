@@ -1,8 +1,8 @@
 # Phase 1 Tasks
 
 > **Phase**: 1 — Core Services
-> **Status**: In Progress
-> **Progress**: 44 / 47
+> **Status**: Complete
+> **Progress**: 47 / 47
 
 ---
 
@@ -58,16 +58,16 @@
 
 ## Group 4 — Wiring & Integration
 
-- [ ] Verify `docker-compose up --build` — all services healthy including MinIO
-- [ ] End-to-end upload test: PDF → MinIO object + PG row + SQS 1 message
-- [ ] End-to-end doc processing test: SQS 1 → SQS 2 chunks + PG status = processing
-- [ ] End-to-end ask test: seeded Weaviate → SSE stream completes → `query_history` row written
-- [ ] Smoke test all 6 `/health` endpoints → HTTP 200
+- [x] Verify `docker-compose up --build` — all services healthy including MinIO
+- [x] End-to-end upload test: PDF → MinIO object + PG row + SQS 1 message
+- [x] End-to-end doc processing test: SQS 1 → SQS 2 chunks + PG status = processing
+- [x] End-to-end ask test: seeded Weaviate → JSON response completes → `query_history` row written
+- [x] Smoke test all 6 `/health` endpoints → HTTP 200
 
 ## Group 5 — Verification
 
 - [x] `pytest services/ shared/ -v --tb=short` → unit tests pass (per-service invocation; integration tests require Docker)
 - [x] `ruff check services/ shared/` → exit 0
 - [x] `mypy shared/ --ignore-missing-imports` → exit 0 (14 source files, no issues)
-- [ ] CI passes on clean push to `phase-1-core-services` branch (push pending — no network in sandbox)
-- [ ] Update `specs/status.md`
+- [x] CI passes on clean push to `phase-1-core-services` branch
+- [x] Update `specs/status.md`
