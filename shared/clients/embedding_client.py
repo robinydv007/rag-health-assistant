@@ -1,12 +1,14 @@
 """Embedding client with provider abstraction.
 
-Switch between OpenAI and any HTTP endpoint by setting
-EMBEDDING_PROVIDER=openai (default) | http_endpoint.
+Switch between OpenAI, any HTTP endpoint, or the local-dev mock by setting
+EMBEDDING_PROVIDER=openai (default) | http_endpoint | mock.
 """
 
 from __future__ import annotations
 
+import hashlib
 import logging
+import math
 import os
 from abc import ABC, abstractmethod
 
@@ -81,6 +83,34 @@ class HTTPEndpointClient(EmbeddingClient):
             return resp.json()
 
 
+class MockEmbeddingClient(EmbeddingClient):
+    """Deterministic 3072-dim unit-norm vectors derived from text hash.
+
+    No network calls, no API key required. Designed for local development
+    and CI environments without an OpenAI key. Set EMBEDDING_PROVIDER=mock
+    to use.
+
+    Same text always produces the same vector (reproducible), so local
+    Weaviate search via BM25 (keyword) works correctly end-to-end even
+    though the vectors are not semantically meaningful.
+    """
+
+    _DIMS = 3072
+
+    async def embed(self, texts: list[str]) -> list[list[float]]:
+        return [self._hash_to_unit_vector(t) for t in texts]
+
+    @classmethod
+    def _hash_to_unit_vector(cls, text: str) -> list[float]:
+        # 96 SHA-256 rounds × 32 bytes = 3072 raw bytes mapped to [-1, 1]
+        raw: list[float] = []
+        for i in range(96):
+            digest = hashlib.sha256(f"{text}:{i}".encode()).digest()
+            raw.extend((b - 127.5) / 127.5 for b in digest)
+        magnitude = math.sqrt(sum(v * v for v in raw)) or 1.0
+        return [v / magnitude for v in raw]
+
+
 def get_embedding_client() -> EmbeddingClient:
     """Return the configured embedding client based on EMBEDDING_PROVIDER.
 
@@ -98,6 +128,8 @@ def get_embedding_client() -> EmbeddingClient:
             url=os.environ.get("EMBEDDING_ENDPOINT_URL", ""),
             api_key=os.environ.get("EMBEDDING_API_KEY"),
         )
+    if provider == "mock":
+        return MockEmbeddingClient()
     raise ValueError(
-        f"Unknown EMBEDDING_PROVIDER '{provider}'. Supported: openai, http_endpoint"
+        f"Unknown EMBEDDING_PROVIDER '{provider}'. Supported: openai, http_endpoint, mock"
     )

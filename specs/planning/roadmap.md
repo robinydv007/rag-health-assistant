@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Last Updated**: 2026-05-12
+> **Last Updated**: 2026-05-13
 
 ## Vision
 
@@ -14,7 +14,7 @@ A fully HIPAA-compliant RAG knowledge assistant that gives any healthcare staff 
 |---------|-------|-----------------|--------|
 | v0.1.0 | Phase 0 — Bootstrap ✅ | Repo scaffold, contracts, local dev, CI pipeline | Sprint 1 |
 | v0.2.0 | Phase 1 — Core Services ✅ | Chat + Uploader + Doc Processing end-to-end | Sprint 2–3 |
-| v0.3.0 | Phase 2 — Embedding & Indexing | Full pipeline: embed → index, VectorDB queryable | Sprint 4–5 |
+| v0.3.0 | Phase 2 — Embedding & Indexing ✅ | Full pipeline: embed → index, VectorDB queryable | Sprint 4–5 |
 | v0.4.0 | Phase 3 — Admin & LLM Router | Admin ops, zero-downtime re-index, LLM fallback | Sprint 6 |
 | v0.5.0 | Phase 4 — Observability & Hardening | Prometheus, Grafana, Jaeger, ELK, load testing | Sprint 7 |
 | v1.0.0 | Phase 5 — Production | HIPAA audit, pen test, production deploy, runbooks | Sprint 8–9 |
@@ -51,15 +51,15 @@ Deliverables:
 
 ---
 
-### Phase 2 — Embedding & Indexing
-**Goal**: The full document pipeline runs end-to-end with real BioGPT/SciBERT embeddings stored in Weaviate.
+### Phase 2 — Embedding & Indexing ✅ (v0.3.0)
+**Goal**: The full document pipeline runs end-to-end with real embeddings stored in Weaviate.
 
 Deliverables:
-- Embedding Service on EC2 GPU: BioGPT batch processing (64 chunks/batch)
-- Indexing Service: write vectors to Weaviate, update PostgreSQL status
-- Indexing Coordinator: chunk completion tracking, signals admin
-- DLQ alerting: CloudWatch alarm on DLQ depth > 0
-- End-to-end pipeline integration test (upload → queryable)
+- Embedding Service: OpenAI `text-embedding-3-large` (3072-dim), batch processing via `EmbeddingClient` abstraction
+- Indexing Service: SQS 3 consumer → Weaviate `KnowledgeChunk` write + `chunk_audit` + PG status update
+- Indexing Coordinator: chunk completion tracking (`chunks_indexed == chunks_total` → `status=indexed`)
+- DLQ monitor: depth check + log WARNING + optional HTTP webhook (`DLQ_ALERT_WEBHOOK_URL`); CloudWatch deferred to Phase 5
+- End-to-end pipeline verified: upload PDF → `status=indexed` + Weaviate queryable + `/ask` returns relevant chunks
 
 ---
 

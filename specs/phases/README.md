@@ -17,7 +17,7 @@ See `index.json` for machine-readable phase metadata.
 |-------|------|--------|
 | 0 | Bootstrap | Complete |
 | 1 | Core Services | Complete |
-| 2 | Embedding & Indexing | In Progress |
+| 2 | Embedding & Indexing | Complete |
 | 3 | Admin & LLM Router | Planned |
 | 4 | Observability & Hardening | Planned |
 | 5 | Production | Planned |

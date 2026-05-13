@@ -19,10 +19,10 @@ instead of noise from placeholder zero-vectors.
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Embedding model | `BiomedNLP-BiomedBERT` via HuggingFace Serverless Inference API | Medical-domain-specific, API-callable, no GPU hosting required |
-| Provider abstraction | `EMBEDDING_PROVIDER` env var (`hf_inference` \| `http_endpoint`) | Self-hosted GPU switch requires only an env var change — zero code changes |
-| EC2 GPU instance | Removed | HF API replaces it; ADR 0003 amended accordingly |
-| Batch size | 64 chunks per HF API call | HF Inference API supports batched inputs; matches original throughput target |
+| Embedding model | `text-embedding-3-large` via OpenAI API (3072-dim) | HF BiomedBERT was producing HTTP 400 errors; OpenAI is production-ready. See ADR 0003a. |
+| Provider abstraction | `EMBEDDING_PROVIDER` env var (`openai` \| `http_endpoint`) | Self-hosted GPU switch requires only an env var change — zero code changes |
+| EC2 GPU instance | Removed | API-based embedding removes GPU hosting requirement entirely |
+| Batch size | 64 chunks per API call | Matches original throughput target |
 | DLQ alerting | Alert logic + local webhook hook | Real CloudWatch/SNS wired in Phase 5 with production infra |
 | Search eval set | Deferred to Phase 3 | Phase 3 needs it for LLM router optimization |
 | HL7 parsing | Still deferred to Phase 3 | Keep Phase 2 focused on embedding pipeline |
@@ -34,13 +34,13 @@ instead of noise from placeholder zero-vectors.
 
 ### In Scope
 
-- **Embedding Service** (`services/embedding-service/`): SQS 2 consumer → batch 64 chunks → HF BiomedBERT API → SQS 3 publish → `documents.status = embedding`
+- **Embedding Service** (`services/embedding-service/`): SQS 2 consumer → batch 64 chunks → OpenAI `text-embedding-3-large` API → SQS 3 publish → `documents.status = embedding`
 - **Indexing Service** (`services/indexing-service/`): SQS 3 consumer → Weaviate `KnowledgeChunk` write → `documents.chunks_indexed++` → `chunk_audit` row → `status = indexed` when complete
 - **Indexing Coordinator** (sub-component of Indexing Service): when `chunks_indexed == chunks_total` → set `documents.status = indexed`
 - **DLQ monitor** (`shared/utils/dlq_monitor.py`): depth check + log + optional webhook on depth > 0 via `DLQ_ALERT_WEBHOOK_URL`
-- **Chat Service update**: replace 768-dim zero-vector with real BiomedBERT embedding call in `searcher.py`
-- **Shared embedding client** (`shared/clients/embedding_client.py`): provider abstraction — `HFInferenceClient` + `HTTPEndpointClient`
-- **ADR 0003 amendment**: BiomedBERT via HF Inference API replaces self-hosted BioGPT/SciBERT on EC2 GPU
+- **Chat Service update**: replace zero-vector with real OpenAI 3072-dim embedding call in `searcher.py`
+- **Shared embedding client** (`shared/clients/embedding_client.py`): provider abstraction — `OpenAIEmbeddingClient` + `HTTPEndpointClient`
+- **ADR 0003 amendment**: OpenAI `text-embedding-3-large` replaces self-hosted BioGPT/SciBERT on EC2 GPU (via ADR 0003a)
 - **SQS 3 + DLQ 3** added to docker-compose
 - **Alembic migrations**: `chunk_audit` table (new); verify `indexing_jobs` migration exists
 - **End-to-end integration test**: upload PDF → indexed in Weaviate → `/ask` returns relevant chunk

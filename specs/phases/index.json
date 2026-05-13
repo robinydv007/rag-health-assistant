@@ -23,9 +23,9 @@
       "name": "Embedding and Indexing",
       "slug": "phase-2-embedding-indexing",
       "version": "v0.3.0",
-      "status": "in-progress",
+      "status": "complete",
       "path": "specs/phases/phase-2-embedding-indexing",
-      "topics": ["embedding-service", "indexing-service", "biomedbert", "huggingface", "weaviate", "sqs", "chunk-audit", "dlq-monitor", "embedding-client", "provider-abstraction", "alembic", "chat-service", "query-embedding", "integration-test", "docker-compose"]
+      "topics": ["embedding-service", "indexing-service", "openai", "weaviate", "sqs", "chunk-audit", "dlq-monitor", "embedding-client", "provider-abstraction", "alembic", "chat-service", "query-embedding", "integration-test", "docker-compose"]
     },
     {
       "number": 3,
@@ -52,6 +52,6 @@
       "path": "specs/phases/phase-5-production"
     }
   ],
-  "active_phase": 2,
+  "active_phase": 3,
   "last_updated": "2026-05-13"
 }
