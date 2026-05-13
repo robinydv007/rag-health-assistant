@@ -202,5 +202,15 @@ curl -X POST http://localhost:8001/api/v1/knowledge/ask \
   -d '{"question": "What is the protocol for patient discharge?", "user_id": "usr_001", "session_id": "sess_001"}'
 ```
 
+### 6. Trigger a re-index (optional)
+
+Forces all documents to be re-embedded and re-indexed into a shadow index, then swaps the alias atomically when complete:
+
+```bash
+curl -X POST http://localhost:8006/api/v1/admin/reindex \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "embedding model upgrade"}'
+```
+
 > API reference → [specs/architecture/api-reference.md](specs/architecture/api-reference.md)  
 > OpenAPI spec → [specs/architecture/openapi.yaml](specs/architecture/openapi.yaml)
