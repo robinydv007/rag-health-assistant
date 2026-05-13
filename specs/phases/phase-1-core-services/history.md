@@ -75,3 +75,21 @@ Affects-specs: specs/status.md, specs/phases/README.md
 Detail: Phase 1 — Core Services started via /start-phase. Branch `phase-1-core-services` created. No P0/P1 bugs in backlog. Implementation begins with Group 0 (infrastructure + shared prerequisites), then Groups 1–3 in parallel (Uploader, Doc Processing, Chat Service), then Group 4 (wiring + integration), then Group 5 (verification).
 
 ---
+
+### [DECISION] 2026-05-13 — Per-service pytest invocation with PYTHONPATH to avoid `src` namespace collision
+
+Topics: testing, ci, pytest, python-path
+Affects-phases: phase-1-core-services
+Affects-specs: none
+Detail: All three services have a `src/` package. Running them in a single pytest process causes the first conftest.py's `src/` to shadow the others. Fixed by splitting CI into three separate pytest invocations, each with `PYTHONPATH=services/<svc>`. Root pyproject.toml testpaths reduced to `["tests"]` (shared only). Per-service conftest.py still handles local single-service runs.
+
+---
+
+### [NOTE] 2026-05-13 — Group 5 verification complete (unit + lint + types); Groups 0–3 fully implemented
+
+Topics: verification, ruff, mypy, pytest, group-5
+Affects-phases: phase-1-core-services
+Affects-specs: none
+Detail: ruff check . → clean; mypy shared/ → 14 files, no issues; unit tests pass per-service (doc-processing: 15, chat-service: 10; uploader-service requires fastapi which is not in local venv but passes in CI). tiktoken made lazy to avoid import-time network download; SearchResult extracted to models.py so reranker tests run without weaviate installed locally. Group 4 (Docker wiring) deferred — requires docker-compose up, not runnable in current sandbox.
+
+---

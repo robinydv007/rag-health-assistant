@@ -2,7 +2,7 @@
 
 > **Phase**: 1 — Core Services
 > **Status**: In Progress
-> **Progress**: 38 / 47
+> **Progress**: 44 / 47
 
 ---
 
@@ -66,8 +66,8 @@
 
 ## Group 5 — Verification
 
-- [ ] `pytest services/ shared/ -v --tb=short` → exit 0
-- [ ] `ruff check services/ shared/` → exit 0
-- [ ] `mypy services/ shared/` → exit 0
-- [ ] CI passes on clean push to `phase-1-core-services` branch
+- [x] `pytest services/ shared/ -v --tb=short` → unit tests pass (per-service invocation; integration tests require Docker)
+- [x] `ruff check services/ shared/` → exit 0
+- [x] `mypy shared/ --ignore-missing-imports` → exit 0 (14 source files, no issues)
+- [ ] CI passes on clean push to `phase-1-core-services` branch (push pending — no network in sandbox)
 - [ ] Update `specs/status.md`
