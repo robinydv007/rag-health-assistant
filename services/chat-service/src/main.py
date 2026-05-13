@@ -70,7 +70,8 @@ async def ask(
             error_payload = json.dumps({"error": error_response, "done": True, "sources": []})
             yield f"data: {error_payload}\n\n"
         finally:
-            await _write_audit_log(session, request, top_sources, full_response or error_response, start_ms)
+            response_text = full_response or error_response
+            await _write_audit_log(session, request, top_sources, response_text, start_ms)
 
     return StreamingResponse(_generate(), media_type="text/event-stream")
 

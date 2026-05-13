@@ -29,7 +29,9 @@ class S3Client:
             kwargs["aws_secret_access_key"] = aws_secret_access_key
         self._client = boto3.client("s3", **kwargs)
 
-    async def upload(self, key: str, data: bytes, content_type: str = "application/octet-stream") -> None:
+    async def upload(
+        self, key: str, data: bytes, content_type: str = "application/octet-stream"
+    ) -> None:
         fn = partial(
             self._client.put_object,
             Bucket=self._bucket,

@@ -4,10 +4,7 @@ Uses a minimal in-memory PDF fixture built with reportlab (if available)
 or a raw-bytes fixture to avoid heavy file fixtures on disk.
 """
 
-import io
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from src.parsers.pdf_parser import parse
 

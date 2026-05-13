@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 
 import boto3
@@ -54,7 +53,6 @@ async def _process_message(body: str) -> None:
     scrubbed_pages = [(scrub(text), page_num) for text, page_num in pages]
 
     # Chunk
-    doc_type = DocType(msg.content_type.split("/")[-1]) if False else DocType.other
     chunks = chunk_pages(
         pages=scrubbed_pages,
         doc_id=msg.doc_id,

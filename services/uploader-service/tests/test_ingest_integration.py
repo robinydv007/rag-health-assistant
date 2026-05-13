@@ -19,7 +19,6 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
 from src.main import app
 
 pytestmark = pytest.mark.integration

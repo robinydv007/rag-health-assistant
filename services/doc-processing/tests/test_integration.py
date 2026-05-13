@@ -12,17 +12,15 @@ Skipped automatically when infra env vars are not set.
 import asyncio
 import json
 import os
-import time
 from unittest.mock import patch
 
 import boto3
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
-from shared.models.document import DocType
-from shared.models.messages import SQS1Message
 from src.main import _process_message
+
+from shared.models.messages import SQS1Message
 
 pytestmark = pytest.mark.integration
 

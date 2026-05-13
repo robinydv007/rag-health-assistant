@@ -4,12 +4,9 @@ Uses FastAPI TestClient with dependency overrides. LLM, Weaviate, and DB
 are all mocked so no infrastructure is required.
 """
 
-import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from fastapi.testclient import TestClient
-
 from src.db import get_session
 from src.main import app
 
@@ -57,7 +54,7 @@ class TestAuditLogOnSuccess:
 
             mock_stream.side_effect = _gen
 
-            resp = client.post("/api/v1/knowledge/ask", json=_ASK_PAYLOAD)
+            client.post("/api/v1/knowledge/ask", json=_ASK_PAYLOAD)
 
         app.dependency_overrides.clear()
         # session.execute must have been called (for the audit log INSERT)

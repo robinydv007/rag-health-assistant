@@ -41,7 +41,9 @@ async def stream_completion(
         Individual text tokens as strings.
     """
     resolved_provider = provider or os.environ.get("LLM_PROVIDER", "openai")
-    resolved_mock = mock if mock is not None else os.environ.get("LLM_MOCK", "false").lower() == "true"
+    resolved_mock = (
+        mock if mock is not None else os.environ.get("LLM_MOCK", "false").lower() == "true"
+    )
 
     if resolved_mock:
         async for token in _mock_stream():

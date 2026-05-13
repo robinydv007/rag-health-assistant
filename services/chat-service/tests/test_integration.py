@@ -13,11 +13,9 @@ import os
 
 import pytest
 import weaviate
-import weaviate.classes as wvc
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
-
 from src.main import app
 
 pytestmark = pytest.mark.integration
@@ -42,10 +40,14 @@ def seeded_weaviate():
     )
     collection = client.collections.get("KnowledgeChunk")
     inserted_ids = []
+    _common = {"docType": "other", "version": 1, "embeddedModel": "zero", "chunkIdx": 0}
     fixtures = [
-        {"docId": "integ-d1", "chunkId": "integ-d1_c0", "text": "Aspirin 81mg for CAD", "title": "Formulary", "pageNum": 3, "docType": "other", "version": 1, "embeddedModel": "zero", "chunkIdx": 0},
-        {"docId": "integ-d2", "chunkId": "integ-d2_c0", "text": "Heparin IV protocol for PE", "title": "Guidelines", "pageNum": 7, "docType": "other", "version": 1, "embeddedModel": "zero", "chunkIdx": 0},
-        {"docId": "integ-d3", "chunkId": "integ-d3_c0", "text": "HTN management algorithm", "title": "Policy", "pageNum": 1, "docType": "other", "version": 1, "embeddedModel": "zero", "chunkIdx": 0},
+        {"docId": "integ-d1", "chunkId": "integ-d1_c0", "text": "Aspirin 81mg for CAD",
+         "title": "Formulary", "pageNum": 3, **_common},
+        {"docId": "integ-d2", "chunkId": "integ-d2_c0", "text": "Heparin IV protocol for PE",
+         "title": "Guidelines", "pageNum": 7, **_common},
+        {"docId": "integ-d3", "chunkId": "integ-d3_c0", "text": "HTN management algorithm",
+         "title": "Policy", "pageNum": 1, **_common},
     ]
     for f in fixtures:
         uuid = collection.data.insert(properties=f, vector=_ZERO_VECTOR)

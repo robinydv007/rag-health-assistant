@@ -1,12 +1,12 @@
 """PII/PHI scrubber using Microsoft Presidio.
 
 All entities are replaced with [REDACTED-{ENTITY_TYPE}] tokens.
-The replacement pattern is deterministic so downstream systems can detect
-redacted spans if needed.
+Presidio engines are initialized lazily on first call so that importing
+this module does not require a spaCy model to be installed.
 """
 
-from presidio_analyzer import AnalyzerEngine
-from presidio_anonymizer import AnonymizerEngine
+from __future__ import annotations
+
 from presidio_anonymizer.entities import OperatorConfig
 
 ENTITIES = [
@@ -21,13 +21,23 @@ ENTITIES = [
     "NPI",
 ]
 
-_analyzer = AnalyzerEngine()
-_anonymizer = AnonymizerEngine()
-
 _OPERATORS: dict[str, OperatorConfig] = {
     entity: OperatorConfig("replace", {"new_value": f"[REDACTED-{entity}]"})
     for entity in ENTITIES
 }
+
+_analyzer = None
+_anonymizer = None
+
+
+def _get_engines():
+    global _analyzer, _anonymizer
+    if _analyzer is None:
+        from presidio_analyzer import AnalyzerEngine
+        from presidio_anonymizer import AnonymizerEngine
+        _analyzer = AnalyzerEngine()
+        _anonymizer = AnonymizerEngine()
+    return _analyzer, _anonymizer
 
 
 def scrub(text: str, language: str = "en") -> str:
@@ -40,8 +50,9 @@ def scrub(text: str, language: str = "en") -> str:
     Returns:
         Scrubbed text with entity placeholders.
     """
-    results = _analyzer.analyze(text=text, entities=ENTITIES, language=language)
-    anonymized = _anonymizer.anonymize(
+    analyzer, anonymizer = _get_engines()
+    results = analyzer.analyze(text=text, entities=ENTITIES, language=language)
+    anonymized = anonymizer.anonymize(
         text=text,
         analyzer_results=results,
         operators=_OPERATORS,

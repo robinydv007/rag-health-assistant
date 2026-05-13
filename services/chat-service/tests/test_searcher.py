@@ -8,8 +8,7 @@ import asyncio
 from unittest.mock import MagicMock, patch
 
 import pytest
-
-from src.searcher import SearchResult, hybrid_search, _ALPHA, _ZERO_VECTOR
+from src.searcher import _ALPHA, _ZERO_VECTOR, SearchResult, hybrid_search
 
 
 def _run(coro):
