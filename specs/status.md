@@ -1,8 +1,8 @@
 # Project Status
 
 > **Last Updated**: 2026-05-13
-> **Current Phase**: Phase 2 — Embedding & Indexing (`complete`)
-> **Latest Release**: v0.2.0 (Phase 1 complete) — Phase 2 pending merge + tag
+> **Current Phase**: Phase 3 — Admin & LLM Router (`not started`)
+> **Latest Release**: v0.3.0 (Phase 2 complete)
 > **Health**: On Track
 
 ## Summary
@@ -15,11 +15,11 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 |-------|------|--------|---------|
 | 0 | Bootstrap | Complete | v0.1.0 |
 | 1 | Core Services | Complete | v0.2.0 |
-| 2 | Embedding & Indexing | Complete | pending v0.3.0 |
+| 2 | Embedding & Indexing | Complete | v0.3.0 |
 
 ## Active Phase
 
-_(none — Phase 2 complete, awaiting `/complete-phase` and merge to main)_
+_(none — Phase 3 not yet started; run `/start-phase` to begin Admin & LLM Router)_
 
 ## Upcoming Phases
 
@@ -43,9 +43,9 @@ _(none — Phase 2 complete, awaiting `/complete-phase` and merge to main)_
 
 ## Next Actions
 
-1. Run `/complete-phase` to finalize Phase 2 (sync-docs + tag v0.3.0)
-2. Merge `phase-2-embedding-indexing` → `main`
-3. Start Phase 3 — Admin & LLM Router
+1. Start Phase 3 — Admin & LLM Router (`/start-phase`)
+2. FEAT-025: Build search relevance evaluation set (deferred from Phase 2)
+3. ENH-002: Consider cross-encoder re-ranking for Phase 3
 
 ## Key Decisions Made
 
