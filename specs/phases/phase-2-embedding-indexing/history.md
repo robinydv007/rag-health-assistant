@@ -4,6 +4,15 @@
 
 ---
 
+### [NOTE] 2026-05-13 — Phase 2 started; branch phase-2-embedding-indexing created
+
+Topics: phase-planning, git, branch
+Affects-phases: phase-2-embedding-indexing
+Affects-specs: specs/status.md, specs/phases/README.md
+Detail: Phase 2 formally started. Branch `phase-2-embedding-indexing` created from `main`. All tracking files updated to `in-progress`. Group 0 (contracts, infrastructure, shared prerequisites) is the first work unit.
+
+---
+
 ### [NOTE] 2026-05-13 — Phase 2 brainstormed; scope locked
 
 Topics: phase-planning, scope, brainstorm

@@ -1,7 +1,7 @@
 # Phase 2 — Embedding & Indexing
 
 > **Version**: 1.0
-> **Status**: Planned
+> **Status**: In Progress
 > **Branch**: `phase-2-embedding-indexing`
 > **Follows**: Phase 1 — Core Services
 

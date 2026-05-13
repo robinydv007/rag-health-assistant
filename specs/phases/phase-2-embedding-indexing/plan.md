@@ -4,6 +4,14 @@
 Sequential:  Group 0 → (Groups 1 + 2 + 3 in parallel) → Group 4 → Group 5
 ```
 
+## Reference Specs
+
+| Spec | Relevance |
+|------|-----------|
+| `specs/architecture/services.md` | Embedding Service, Indexing Service, Chat Service definitions and component contracts |
+| `specs/architecture/api-reference.md` | SQS message schemas: `ChunkEmbeddingJob` (SQS 2), `IndexingJob` (SQS 3) |
+| `specs/architecture/data-model.md` | `chunk_audit` table, `KnowledgeChunk` Weaviate class, `documents` table fields |
+
 ---
 
 ## Group 0 — Contracts, Infrastructure & Shared Prerequisites

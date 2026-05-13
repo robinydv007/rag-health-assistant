@@ -1,7 +1,7 @@
 # Project Status
 
 > **Last Updated**: 2026-05-13
-> **Current Phase**: Phase 2 — Embedding & Indexing (`planned`)
+> **Current Phase**: Phase 2 — Embedding & Indexing (`in-progress`)
 > **Latest Release**: v0.2.0 (Phase 1 complete)
 > **Health**: On Track
 
@@ -20,7 +20,7 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 2 | Embedding & Indexing | Planned | 0% |
+| 2 | Embedding & Indexing | In Progress | 0% |
 
 **Phase 2 Goal**: Full document pipeline with real BioGPT/SciBERT embeddings stored in Weaviate — upload → process → embed → index → queryable.
 
@@ -46,10 +46,10 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 ## Next Actions
 
-1. Run `/brainstorm-phase` to design Phase 2 — Embedding & Indexing
-2. Implement Embedding Service: BioGPT/SciBERT batch inference, SQS 2 → SQS 3
-3. Implement Indexing Service: SQS 3 → Weaviate write + PG status update
-4. Implement Indexing Coordinator: chunk completion tracking
+1. **Group 0** — Contracts, infra & shared prerequisites (SQS 3, embedding client, chunk_audit migration, ADR 0003a)
+2. **Group 1/2/3** (parallel) — Embedding Service, Indexing Service, Chat Service query embedding update
+3. **Group 4** — Docker wiring + end-to-end pipeline test
+4. **Group 5** — Full verification: pytest, ruff, mypy, CI
 
 ## Key Decisions Made
 

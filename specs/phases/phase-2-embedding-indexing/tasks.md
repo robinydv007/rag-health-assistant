@@ -1,7 +1,7 @@
 # Phase 2 Tasks
 
 > **Phase**: 2 — Embedding & Indexing
-> **Status**: Planned
+> **Status**: In Progress
 > **Progress**: 0 / 45
 
 ---
