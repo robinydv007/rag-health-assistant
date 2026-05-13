@@ -65,7 +65,7 @@ Full ADR index → [specs/decisions/README.md](specs/decisions/README.md)
 | Backend | Python FastAPI | Async-native, SSE streaming, ML ecosystem |
 | RAG | LangChain | Retrieval chains, prompt management |
 | LLM (primary) | GPT-4 / Claude 3 | Best quality for medical queries |
-| LLM (fallback) | Llama 2 / Mistral 7B | Self-hosted, works if primary is down |
+| LLM (fallback) | Anthropic Claude (claude-sonnet-4-6) | API-based fallback; self-hosted Ollama planned for Phase 3 |
 | Embeddings | OpenAI text-embedding-3-large | 3072-dim; GPU-swappable via `EMBEDDING_PROVIDER` env var |
 | Vector DB | Weaviate | Hybrid semantic + keyword (BM25) search |
 | SQL DB | PostgreSQL (RDS Multi-AZ) | Audit logs, doc status, query history |
@@ -115,6 +115,7 @@ User asks question
 
 | Document | Contents |
 |---|---|
+| [Summary](SUMMARY.md) | 1-page overview — architecture, design decisions, how to run |
 | [Roadmap](specs/planning/roadmap.md) | 6-phase release plan (v0.1 → v1.0) |
 | [Status](specs/status.md) | Current phase, progress, blockers |
 | [Backlog](specs/backlog/backlog.md) | Features, bugs, tech debt |
@@ -184,8 +185,10 @@ curl http://localhost:8006/api/v1/health  # admin-service
 ### 4. Upload a document
 
 ```bash
-curl -X POST http://localhost:8002/upload \
-  -F "file=@/path/to/your/document.pdf"
+curl -X POST http://localhost:8002/api/v1/knowledge/ingest \
+  -F "file=@/path/to/your/document.pdf" \
+  -F "title=My Document" \
+  -F "doc_type=clinical_guideline"
 ```
 
 The document flows through the async pipeline automatically:
@@ -194,9 +197,9 @@ The document flows through the async pipeline automatically:
 ### 5. Ask a question
 
 ```bash
-curl -X POST http://localhost:8001/ask \
+curl -X POST http://localhost:8001/api/v1/knowledge/ask \
   -H "Content-Type: application/json" \
-  -d '{"query": "What is the protocol for patient discharge?"}'
+  -d '{"question": "What is the protocol for patient discharge?", "user_id": "usr_001", "session_id": "sess_001"}'
 ```
 
 > API reference → [specs/architecture/api-reference.md](specs/architecture/api-reference.md)  
