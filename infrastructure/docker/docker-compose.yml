@@ -68,11 +68,20 @@ services:
     env_file: ../../.env
     environment:
       - AWS_ENDPOINT_URL=http://elasticmq:9324
+      - DATABASE_URL=postgresql+asyncpg://raghealth:raghealth_local@postgres:5432/raghealth
       - SQS_QUEUE_2_URL=http://elasticmq:9324/000000000000/embedding-queue
       - SQS_QUEUE_3_URL=http://elasticmq:9324/000000000000/indexing-queue
+      - SQS_DLQ_2_URL=http://elasticmq:9324/000000000000/embedding-dlq
+      - SQS_DLQ_3_URL=http://elasticmq:9324/000000000000/indexing-dlq
     depends_on:
+      - postgres
       - elasticmq
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   indexing-service:
     build:
@@ -82,12 +91,21 @@ services:
     environment:
       - AWS_ENDPOINT_URL=http://elasticmq:9324
       - DATABASE_URL=postgresql+asyncpg://raghealth:raghealth_local@postgres:5432/raghealth
+      - WEAVIATE_URL=http://weaviate:8080
       - SQS_QUEUE_3_URL=http://elasticmq:9324/000000000000/indexing-queue
+      - SQS_DLQ_1_URL=http://elasticmq:9324/000000000000/doc-processing-dlq
+      - SQS_DLQ_2_URL=http://elasticmq:9324/000000000000/embedding-dlq
+      - SQS_DLQ_3_URL=http://elasticmq:9324/000000000000/indexing-dlq
     depends_on:
       - postgres
       - weaviate
       - elasticmq
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   admin-service:
     build:

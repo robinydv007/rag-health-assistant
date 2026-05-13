@@ -2,20 +2,20 @@
 
 > **Phase**: 2 — Embedding & Indexing
 > **Status**: In Progress
-> **Progress**: 0 / 45
+> **Progress**: 8 / 45
 
 ---
 
 ## Group 0 — Contracts, Infrastructure & Shared Prerequisites
 
-- [ ] Add SQS 3 + DLQ 3 to `docker-compose.yml`
-- [ ] Add `embedding-service` and `indexing-service` to `docker-compose.yml`
-- [ ] Create `shared/clients/embedding_client.py` — `EmbeddingClient` base, `HFInferenceClient`, `HTTPEndpointClient`, `get_embedding_client()` factory
-- [ ] Add `chunk_audit` Alembic migration
-- [ ] Verify `indexing_jobs` Alembic migration exists; add if missing
-- [ ] Add Phase 2 deps to service `requirements.txt` files (`httpx`, `weaviate-client`, `sqlalchemy[asyncio]`, `asyncpg`)
-- [ ] Update `.env.example` with new vars (`EMBEDDING_PROVIDER`, `HF_INFERENCE_URL`, `HF_API_KEY`, `EMBEDDING_ENDPOINT_URL`, `EMBEDDING_API_KEY`, `SQS_3_URL`, `DLQ_3_URL`, `DLQ_ALERT_WEBHOOK_URL`)
-- [ ] Write ADR 0003 amendment (`specs/decisions/0003a-biomedbert-hf-inference-api.md`)
+- [x] Add SQS 3 + DLQ 3 to `docker-compose.yml`
+- [x] Add `embedding-service` and `indexing-service` to `docker-compose.yml`
+- [x] Create `shared/clients/embedding_client.py` — `EmbeddingClient` base, `HFInferenceClient`, `HTTPEndpointClient`, `get_embedding_client()` factory
+- [x] Add `chunk_audit` Alembic migration
+- [x] Verify `indexing_jobs` Alembic migration exists; add if missing
+- [x] Add Phase 2 deps to service `requirements.txt` files (`httpx`, `weaviate-client`, `sqlalchemy[asyncio]`, `asyncpg`)
+- [x] Update `.env.example` with new vars (`EMBEDDING_PROVIDER`, `HF_INFERENCE_URL`, `HF_API_KEY`, `EMBEDDING_ENDPOINT_URL`, `EMBEDDING_API_KEY`, `SQS_3_URL`, `DLQ_3_URL`, `DLQ_ALERT_WEBHOOK_URL`)
+- [x] Write ADR 0003 amendment (`specs/decisions/0003a-biomedbert-hf-inference-api.md`)
 
 ## Group 1 — Embedding Service
 

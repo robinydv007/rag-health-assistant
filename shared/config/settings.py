@@ -39,8 +39,15 @@ class BaseServiceSettings(BaseSettings):
     llm_fallback: str = "anthropic"   # Provider used if primary fails
     llm_fallback_url: str | None = None  # Self-hosted Llama/Mistral endpoint (Phase 3)
 
-    # Embedding
-    embedding_model: str = "biogpt"  # biogpt | scibert
+    # Embedding — Phase 2: BiomedBERT via HF Inference API
+    embedding_provider: str = "hf_inference"   # hf_inference | http_endpoint
+    hf_inference_url: str = ""                 # HF feature-extraction pipeline URL
+    hf_api_key: str = ""                       # HF token
+    embedding_endpoint_url: str = ""           # Self-hosted GPU endpoint URL
+    embedding_api_key: str | None = None       # Optional auth for self-hosted endpoint
+
+    # DLQ alerting
+    dlq_alert_webhook_url: str | None = None   # POST here when any DLQ depth > 0
 
     # Index
     live_index_alias: str = "knowledge-live"

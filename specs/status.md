@@ -20,7 +20,7 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 2 | Embedding & Indexing | In Progress | 0% |
+| 2 | Embedding & Indexing | In Progress | 18% |
 
 **Phase 2 Goal**: Full document pipeline with real BioGPT/SciBERT embeddings stored in Weaviate — upload → process → embed → index → queryable.
 
