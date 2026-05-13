@@ -103,6 +103,15 @@ Detail: HuggingFace BiomedBERT (via HF Serverless Inference API) was producing H
 
 ---
 
+### [FEATURE] 2026-05-13 — ENH-007: local-dev no-API-key mock mode implemented
+
+Topics: devex, mock, embedding, llm, testing
+Affects-phases: phase-2-embedding-indexing
+Affects-specs: none
+Detail: `MockEmbeddingClient` added to `shared/clients/embedding_client.py` — deterministic SHA-256-hashed 3072-dim unit-norm vectors, no network call, no API key. `_mock_stream` added to `shared/clients/llm_client.py` — yields a canned `[LOCAL DEV — no API key]` response. Both activated via `EMBEDDING_PROVIDER=mock` and `LLM_PRIMARY=mock`. `.env.example` documents the opt-in. 8 new unit tests (4 in embedding-service, 4 in root tests/) all pass. ENH-007 marked resolved.
+
+---
+
 ### [NOTE] 2026-05-13 — Phase 2 Group 5 verification complete
 
 Topics: verification, testing, ruff, mypy, docker
