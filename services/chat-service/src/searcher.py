@@ -1,8 +1,7 @@
-"""Weaviate hybrid searcher (BM25 + placeholder zero-vector).
+"""Weaviate hybrid searcher (BM25 + BiomedBERT query embedding).
 
-Uses weaviate-client v4 API. In Phase 1 the nearVector component uses a
-768-dim zero-vector; real embeddings arrive in Phase 2. BM25 keyword search
-drives result quality in this phase.
+Uses weaviate-client v4 API. Phase 2: zero-vector replaced with a real
+BiomedBERT embedding from the shared EmbeddingClient.
 """
 
 from __future__ import annotations
@@ -12,17 +11,19 @@ from urllib.parse import urlparse
 import weaviate
 import weaviate.classes as wvc
 
+from shared.clients.embedding_client import EmbeddingClient, get_embedding_client
 from shared.config.settings import BaseServiceSettings
 
 from .models import SearchResult  # re-exported for callers that import from here
 
 _COLLECTION = "KnowledgeChunk"
-_VECTOR_DIM = 768
-_ZERO_VECTOR = [0.0] * _VECTOR_DIM
 _DEFAULT_LIMIT = 5
-_ALPHA = 0.4  # 40% vector, 60% BM25 (zero-vectors make vector side ~noise)
+_ALPHA = 0.5  # 50/50 vector+BM25 now that we have real embeddings
 
 __all__ = ["SearchResult", "hybrid_search"]
+
+# Initialised once at module load — reused across requests
+_embedding_client: EmbeddingClient = get_embedding_client()
 
 
 def _make_client(settings: BaseServiceSettings) -> weaviate.WeaviateClient:
@@ -45,10 +46,7 @@ async def hybrid_search(
     synonym_terms: list[str],
     limit: int = _DEFAULT_LIMIT,
 ) -> list[SearchResult]:
-    """Run a hybrid BM25 + vector search against Weaviate.
-
-    The query string is augmented with synonym terms by joining them with
-    spaces so Weaviate BM25 can score against the expanded vocabulary.
+    """Run a hybrid BM25 + BiomedBERT vector search against Weaviate.
 
     Args:
         query: Original user question.
@@ -61,11 +59,15 @@ async def hybrid_search(
     full_query = " ".join([query] + synonym_terms)
     settings = BaseServiceSettings()
 
+    # Embed the query with BiomedBERT — same model used when indexing chunks
+    vectors = await _embedding_client.embed([query])
+    query_vector = vectors[0]
+
     with _make_client(settings) as client:
         collection = client.collections.get(_COLLECTION)
         response = collection.query.hybrid(
             query=full_query,
-            vector=_ZERO_VECTOR,
+            vector=query_vector,
             alpha=_ALPHA,
             limit=limit,
             return_metadata=wvc.query.MetadataQuery(score=True),

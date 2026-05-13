@@ -32,6 +32,7 @@ class SQS3Message(BaseModel):
     """Embedding Service → Indexing Service"""
     doc_id: str
     chunk_id: str
+    text: str           # Scrubbed chunk text — required for Weaviate hybrid search
     embedding: list[float]
     metadata: ChunkMetadata
     target_index: str

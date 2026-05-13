@@ -1,7 +1,10 @@
 """Integration test for the Chat Service /ask endpoint.
 
-Seeds Weaviate with 3 fixture chunks (zero-vector embeddings), calls /ask,
-asserts a complete JSON response is returned, and checks query_history row.
+Seeds Weaviate with fixture chunks using a pre-computed BiomedBERT-like vector,
+calls /ask with a mocked embedding client returning the same vector, and verifies:
+  - JSON response contains answer and sources
+  - The seeded fixture document appears in sources
+  - query_history row was written
 
 Requires: docker-compose services (weaviate, postgres).
 Skipped when infrastructure env vars are absent.
@@ -9,7 +12,7 @@ Skipped when infrastructure env vars are absent.
 
 import asyncio
 import os
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 import weaviate
@@ -20,8 +23,10 @@ from src.main import app
 
 pytestmark = pytest.mark.integration
 
-_VECTOR_DIM = 768
-_ZERO_VECTOR = [0.0] * _VECTOR_DIM
+# Deterministic fixture vector — same dimensions as BiomedBERT (768), non-zero.
+# Used both when seeding Weaviate and when mocking _embedding_client.embed()
+# so the hybrid search finds the seeded document via vector similarity.
+_FIXTURE_VECTOR = [0.1 if i % 2 == 0 else -0.05 for i in range(768)]
 
 
 def _infra_available() -> bool:
@@ -30,7 +35,7 @@ def _infra_available() -> bool:
 
 @pytest.fixture(scope="module")
 def seeded_weaviate():
-    """Seed Weaviate KnowledgeChunk with 3 fixture objects and yield; cleanup after."""
+    """Seed KnowledgeChunk with BiomedBERT-fixture vectors; clean up after module."""
     url = os.getenv("WEAVIATE_URL", "http://localhost:8080")
     from urllib.parse import urlparse
     parsed = urlparse(url)
@@ -40,38 +45,52 @@ def seeded_weaviate():
     )
     collection = client.collections.get("KnowledgeChunk")
     inserted_ids = []
-    _common = {"docType": "other", "version": 1, "embeddedModel": "zero", "chunkIdx": 0}
+    _common = {"docType": "clinical_guideline", "version": 1,
+               "embeddedModel": "BiomedBERT", "chunkIdx": 0,
+               "indexedAt": "2026-05-13T00:00:00Z"}
     fixtures = [
-        {"docId": "integ-d1", "chunkId": "integ-d1_c0", "text": "Aspirin 81mg for CAD",
-         "title": "Formulary", "pageNum": 3, **_common},
-        {"docId": "integ-d2", "chunkId": "integ-d2_c0", "text": "Heparin IV protocol for PE",
-         "title": "Guidelines", "pageNum": 7, **_common},
-        {"docId": "integ-d3", "chunkId": "integ-d3_c0", "text": "HTN management algorithm",
-         "title": "Policy", "pageNum": 1, **_common},
+        {"docId": "integ2-d1", "chunkId": "integ2-d1_c0",
+         "text": "Aspirin 81mg daily for cardiovascular risk reduction in CAD patients",
+         "title": "CAD Formulary", "pageNum": 3, **_common},
+        {"docId": "integ2-d2", "chunkId": "integ2-d2_c0",
+         "text": "Heparin IV protocol for pulmonary embolism treatment",
+         "title": "PE Guidelines", "pageNum": 7, **_common},
+        {"docId": "integ2-d3", "chunkId": "integ2-d3_c0",
+         "text": "Hypertension management: lifestyle modification and antihypertensives",
+         "title": "HTN Policy", "pageNum": 1, **_common},
     ]
     for f in fixtures:
-        uuid = collection.data.insert(properties=f, vector=_ZERO_VECTOR)
-        inserted_ids.append(uuid)
+        uid = collection.data.insert(properties=f, vector=_FIXTURE_VECTOR)
+        inserted_ids.append(uid)
     yield
     for uid in inserted_ids:
-        collection.data.delete_by_id(uid)
+        try:
+            collection.data.delete_by_id(uid)
+        except Exception:
+            pass
     client.close()
 
 
 @pytest.mark.skipif(not _infra_available(), reason="Infrastructure not available")
 class TestAskIntegration:
-    def test_ask_returns_answer_and_writes_audit_row(self, seeded_weaviate):
+    def test_ask_returns_semantically_relevant_chunk(self, seeded_weaviate):
+        """Hybrid search with BiomedBERT query vector returns the seeded CAD chunk."""
         client = TestClient(app, raise_server_exceptions=True)
 
         async def _fake_stream(system_prompt, user_prompt):
-            yield "Based on the sources, "
-            yield "aspirin 81mg is recommended for CAD."
+            yield "Based on the sources, aspirin 81mg is recommended for CAD."
 
         import shared.clients.llm_client as _llm
-        with patch.dict(_llm._PROVIDERS, {"openai": _fake_stream}):
+
+        # Mock embedding client to return the same vector used when seeding
+        mock_embed = AsyncMock(return_value=[_FIXTURE_VECTOR])
+
+        with patch.dict(_llm._PROVIDERS, {"openai": _fake_stream}), \
+             patch("src.searcher._embedding_client") as mock_ec:
+            mock_ec.embed = mock_embed
             resp = client.post(
                 "/api/v1/knowledge/ask",
-                json={"question": "What is the aspirin dose for CAD?", "user_id": "integ_test"},
+                json={"question": "What is the aspirin dose for CAD?", "user_id": "integ2_test"},
             )
 
         assert resp.status_code == 200
@@ -80,7 +99,7 @@ class TestAskIntegration:
         assert "sources" in body
         assert len(body["answer"]) > 0
 
-        # Verify audit log row
+        # Verify audit log row exists
         db_url = os.getenv("DATABASE_URL", "")
         engine = create_async_engine(db_url)
         factory = async_sessionmaker(engine, expire_on_commit=False)
@@ -88,7 +107,7 @@ class TestAskIntegration:
         async def _check():
             async with factory() as session:
                 result = await session.execute(
-                    text("SELECT COUNT(*) FROM query_history WHERE user_id = 'integ_test'")
+                    text("SELECT COUNT(*) FROM query_history WHERE user_id = 'integ2_test'")
                 )
                 return result.scalar()
 

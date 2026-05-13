@@ -4,6 +4,15 @@
 
 ---
 
+### [ARCH_CHANGE] 2026-05-13 — SQS3Message (IndexingJob) extended with text field
+
+Topics: sqs, indexing, weaviate, hybrid-search
+Affects-phases: phase-2-embedding-indexing
+Affects-specs: specs/architecture/api-reference.md#sqs-3-indexing-job
+Detail: SQS3Message in shared/models/messages.py lacked a `text` field. Weaviate KnowledgeChunk stores `text` as a required property for BM25 hybrid search. Without it, only vector similarity works — keyword matching fails. Field added during Group 1 implementation. The api-reference.md spec needs updating at phase completion via /sync-docs.
+
+---
+
 ### [NOTE] 2026-05-13 — Phase 2 started; branch phase-2-embedding-indexing created
 
 Topics: phase-planning, git, branch

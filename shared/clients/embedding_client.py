@@ -43,6 +43,10 @@ class HFInferenceClient(EmbeddingClient):
         }
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
+        if not self._url:
+            raise ValueError(
+                "HF_INFERENCE_URL must be set when EMBEDDING_PROVIDER=hf_inference"
+            )
         payload = {"inputs": texts}
         async with httpx.AsyncClient(timeout=60.0) as client:
             for attempt in range(_HF_503_RETRY_LIMIT):
@@ -94,21 +98,19 @@ class HTTPEndpointClient(EmbeddingClient):
 
 
 def get_embedding_client() -> EmbeddingClient:
-    """Return the configured embedding client based on EMBEDDING_PROVIDER."""
+    """Return the configured embedding client based on EMBEDDING_PROVIDER.
+
+    URL validation is deferred to embed() time so modules can be imported and
+    tested without requiring all env vars to be present at import time.
+    """
     provider = os.environ.get("EMBEDDING_PROVIDER", "hf_inference")
     if provider == "hf_inference":
         url = os.environ.get("HF_INFERENCE_URL", "")
         api_key = os.environ.get("HF_API_KEY", "")
-        if not url:
-            raise ValueError("HF_INFERENCE_URL must be set when EMBEDDING_PROVIDER=hf_inference")
         return HFInferenceClient(url=url, api_key=api_key)
     if provider == "http_endpoint":
         url = os.environ.get("EMBEDDING_ENDPOINT_URL", "")
         api_key = os.environ.get("EMBEDDING_API_KEY")
-        if not url:
-            raise ValueError(
-                "EMBEDDING_ENDPOINT_URL must be set when EMBEDDING_PROVIDER=http_endpoint"
-            )
         return HTTPEndpointClient(url=url, api_key=api_key)
     raise ValueError(
         f"Unknown EMBEDDING_PROVIDER '{provider}'. Supported: hf_inference, http_endpoint"
