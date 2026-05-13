@@ -75,4 +75,4 @@
 | ENH-004 | Multi-language support for non-English clinical documents | P3 | open | 5 | features |
 | ENH-005 | Web UI for clinical staff (React frontend) | P3 | open | 5 | features |
 | ENH-006 | SSE streaming for /ask endpoint (token-by-token) | P3 | open | - | chat |
-| ENH-007 | Local-dev no-API-key mock mode (MockEmbeddingClient + mock LLM) | P1 | in-progress | 3 | devex |
+| ENH-007 | Local-dev no-API-key mock mode (MockEmbeddingClient + mock LLM) | P1 | resolved | 3 | devex |

@@ -2,7 +2,7 @@
 
 > **Phase**: 2 — Embedding & Indexing
 > **Status**: Complete
-> **Progress**: 45 / 45
+> **Progress**: 47 / 47
 
 ---
 
@@ -58,11 +58,11 @@
 
 - [x] `docker-compose up --build` → all 8 services + infrastructure healthy
 - [x] Smoke test all 8 `/health` endpoints → HTTP 200
-- [ ] End-to-end upload test: PDF → MinIO + PG `status=pending` + SQS 1 message
-- [ ] End-to-end doc processing test: SQS 1 → SQS 2 chunks + PG `status=processing`
-- [ ] End-to-end embedding test: SQS 2 → SQS 3 messages with 3072-dim float vectors + PG `status=embedding`
-- [ ] End-to-end indexing test: SQS 3 → Weaviate object + PG `status=indexed` + `chunk_audit` row
-- [ ] End-to-end ask test: `/ask` returns semantically relevant chunk from indexed doc
+- [x] End-to-end upload test: PDF → MinIO + PG `status=pending` + SQS 1 message
+- [x] End-to-end doc processing test: SQS 1 → SQS 2 chunks + PG `status=processing`
+- [x] End-to-end embedding test: SQS 2 → SQS 3 messages with 3072-dim float vectors + PG `status=embedding`
+- [x] End-to-end indexing test: SQS 3 → Weaviate object + PG `status=indexed` + `chunk_audit` row
+- [x] End-to-end ask test: `/ask` returns semantically relevant chunk from indexed doc
 
 ## Group 5 — Verification
 

@@ -1,8 +1,9 @@
-# ADR 0003a — BiomedBERT via HuggingFace Inference API (Amendment to ADR 0003)
+# ADR 0003a — OpenAI text-embedding-3-large (Amendment to ADR 0003)
 
 > **Status**: accepted
 > **Date**: 2026-05-13
 > **Amends**: [ADR 0003 — BioGPT/SciBERT for Domain-Specific Medical Embeddings](0003-medical-embedding-models.md)
+> **Note**: Originally adopted BiomedBERT via HuggingFace Serverless API; HF was removed mid-phase (HTTP 400 errors, not production-ready). Final decision: OpenAI `text-embedding-3-large` (3072-dim).
 
 ## Context
 
@@ -14,16 +15,18 @@ ADR 0003 selected BioGPT (Microsoft) and SciBERT (AllenAI) deployed on EC2 GPU i
 
 ## Decision
 
-**Replace self-hosted BioGPT/SciBERT on EC2 GPU with `microsoft/BiomedNLP-BiomedBERT-base-uncased-abstract-fulltext` via the HuggingFace Serverless Inference API.**
+**Replace self-hosted BioGPT/SciBERT on EC2 GPU with OpenAI `text-embedding-3-large` (3072-dim vectors).**
+
+Originally planned as BiomedBERT via HuggingFace Serverless API, but HF produced persistent HTTP 400 errors and is not production-ready for embedding workloads. Switched to OpenAI `text-embedding-3-large` which is stable, production-grade, and delivers high-quality dense vectors.
 
 The switch is implemented via a provider abstraction (`shared/clients/embedding_client.py`):
 
 | `EMBEDDING_PROVIDER` | Implementation | When to use |
 |---|---|---|
-| `hf_inference` (default) | `HFInferenceClient` — calls HF Serverless API | Phase 2–4 development |
+| `openai` (default) | `OpenAIEmbeddingClient` — calls OpenAI Embeddings API | Phase 2+ (default) |
 | `http_endpoint` | `HTTPEndpointClient` — calls any HTTP model server | Self-hosted GPU (Triton, vLLM, custom FastAPI) |
 
-Both clients use the same request/response contract: `{"inputs": [...]}` → `[[float, ...], ...]`. Switching to self-hosted GPU in Phase 5 requires only an env var change — zero code changes in Embedding Service or Chat Service.
+Both clients produce `[[float, ...], ...]` vectors. Switching to self-hosted GPU in Phase 5 requires only an env var change — zero code changes in Embedding Service or Chat Service.
 
 ## Consequences
 
@@ -39,15 +42,17 @@ Both clients use the same request/response contract: `{"inputs": [...]}` → `[[
 - Latency per batch is higher than a warm local GPU endpoint (~200–500ms per batch vs ~50ms)
 
 ### Changed from ADR 0003
-- `EMBEDDING_MODEL=biogpt | scibert` env var replaced by `EMBEDDING_PROVIDER=hf_inference | http_endpoint`
+- `EMBEDDING_MODEL=biogpt | scibert` env var replaced by `EMBEDDING_PROVIDER=openai | http_endpoint`
 - EC2 GPU instance removed from infrastructure plan entirely
 - S3 paths `models/biogpt/` and `models/scibert/` are now unused — not provisioned
-- ADR 0003's "risks" around GPU spot interruption are eliminated for Phase 2
+- `HFInferenceClient` and all HF env vars (`HF_INFERENCE_URL`, `HF_API_KEY`) removed entirely
+- Vector dimension changes from 768 (BiomedBERT) to 3072 (text-embedding-3-large)
+- ADR 0003's "risks" around GPU spot interruption are eliminated
 
 ## Self-Hosted GPU Upgrade Path (Phase 5)
 
-When production volume exceeds HF Serverless API rate limits:
+When production volume warrants moving off the OpenAI API:
 
-1. Deploy a model server (e.g. `text-embeddings-inference` from HuggingFace, or a FastAPI wrapper around `transformers.AutoModel`)
+1. Deploy a model server (e.g. `text-embeddings-inference` from HuggingFace, or a FastAPI wrapper around a transformer model)
 2. Set `EMBEDDING_PROVIDER=http_endpoint` and `EMBEDDING_ENDPOINT_URL=http://your-gpu-server:8080/embed`
 3. No code changes required in Embedding Service, Indexing Service, or Chat Service
