@@ -30,7 +30,7 @@ A user can ask a question and get an answer. A user can upload a document and se
 
 ### In Scope
 
-- **Chat Service**: query expansion (synonym dict) → Weaviate hybrid search → score-based rerank → direct LLM call (streaming) → SSE response → audit log write
+- **Chat Service**: query expansion (synonym dict) → Weaviate hybrid search → score-based rerank → direct LLM call → JSON response (`{"answer", "sources"}`) → audit log write
 - **Uploader Service**: multipart file upload → MinIO → PostgreSQL `documents` insert → SQS 1 publish → HTTP 202
 - **Doc Processing Service**: SQS 1 consumer → Presidio PII scrub → PDF/DOCX/TXT parse → 512-token overlapping chunks → SQS 2 publish → PostgreSQL status update
 - **`GET /knowledge/history`** paginated query history endpoint
@@ -55,7 +55,7 @@ A user can ask a question and get an answer. A user can upload a document and se
 |-------------|---------------------|
 | Uploader ingest endpoint | `curl -X POST .../ingest` → HTTP 202; MinIO object exists; `documents` row inserted; SQS 1 message visible |
 | Doc Processing pipeline | Consume SQS 1 → PII scrubbed → chunked → SQS 2 message count increases → `documents.status = processing` |
-| Chat Service ask endpoint | `curl -X POST .../ask` → SSE token stream with sources |
+| Chat Service ask endpoint | `curl -X POST .../ask` → JSON `{"answer": str, "sources": [...]}` |
 | Query audit log | After `/ask`, `SELECT * FROM query_history` shows new row |
 | History endpoint | `GET /knowledge/history?user_id=...` → paginated results with correct schema |
 | All unit + integration tests | `pytest services/ shared/ -v` exits 0 |
@@ -68,7 +68,7 @@ A user can ask a question and get an answer. A user can upload a document and se
 
 1. `POST /api/v1/knowledge/ingest` with a PDF → HTTP 202; file stored in MinIO; row inserted in `documents` with `status=pending`; message published to SQS 1
 2. Doc Processing consumes SQS 1 message → downloads from MinIO → scrubs PII → parses → chunks → publishes to SQS 2 → updates `documents.status = processing`
-3. `POST /api/v1/knowledge/ask` with a question → SSE stream of tokens; final event includes sources list
+3. `POST /api/v1/knowledge/ask` with a question → JSON `{"answer": str, "sources": [...]}` (SSE deferred to ENH-006)
 4. Every `/ask` call — including errors — writes exactly one row to `query_history`
 5. `GET /api/v1/knowledge/history` returns paginated results matching the API reference schema
 6. `pytest services/ shared/ -v` — all tests pass (unit + integration)

@@ -41,7 +41,7 @@ Deliverables:
 **Goal**: A user can ask a question and get an answer; a user can upload a document and see it enter the pipeline.
 
 Deliverables:
-- Chat Service: query expand → hybrid search → rerank → LLM call → SSE stream
+- Chat Service: query expand → hybrid search → rerank → LLM call → JSON response
 - Uploader Service: file upload → S3 → PostgreSQL → SQS 1 publish
 - Doc Processing: SQS 1 consumer → PII scrub → chunk → SQS 2 publish
 - Query audit log writing to PostgreSQL

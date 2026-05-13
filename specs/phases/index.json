@@ -16,7 +16,7 @@
       "version": "v0.2.0",
       "status": "in-progress",
       "path": "specs/phases/phase-1-core-services",
-      "topics": ["chat-service", "uploader-service", "doc-processing", "minio", "s3", "presidio", "pii-scrubbing", "sqs", "sse", "streaming", "pdfplumber", "python-docx", "tiktoken", "chunking", "query-expansion", "medical-synonyms", "weaviate", "hybrid-search", "audit-log", "query-history", "postgresql", "sqlalchemy", "openai", "anthropic", "llm-client", "fastapi"]
+      "topics": ["chat-service", "uploader-service", "doc-processing", "minio", "s3", "presidio", "pii-scrubbing", "sqs", "json-response", "pdfplumber", "python-docx", "tiktoken", "chunking", "query-expansion", "medical-synonyms", "weaviate", "hybrid-search", "audit-log", "query-history", "postgresql", "sqlalchemy", "openai", "anthropic", "llm-client", "fastapi"]
     },
     {
       "number": 2,
