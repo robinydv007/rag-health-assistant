@@ -1,12 +1,17 @@
-"""Unit tests for OpenAIEmbeddingClient and HTTPEndpointClient."""
+"""Unit tests for OpenAIEmbeddingClient, HTTPEndpointClient, and MockEmbeddingClient."""
 
 import json
+import math
 
 import httpx
 import pytest
 import respx
 
-from shared.clients.embedding_client import HTTPEndpointClient, OpenAIEmbeddingClient
+from shared.clients.embedding_client import (
+    HTTPEndpointClient,
+    MockEmbeddingClient,
+    OpenAIEmbeddingClient,
+)
 
 _OPENAI_EMBED_URL = "https://api.openai.com/v1/embeddings"
 _FAKE_ENDPOINT_URL = "http://fake-gpu-server/embed"
@@ -85,3 +90,42 @@ async def test_http_endpoint_client_no_auth():
     await client.embed(_TEXTS)
     call = respx.calls[0]
     assert "authorization" not in call.request.headers
+
+
+# ── MockEmbeddingClient tests ────────────────────────────────────────────────
+
+@pytest.mark.asyncio
+async def test_mock_returns_3072_dim_vector():
+    """MockEmbeddingClient returns one 3072-float vector per input text."""
+    client = MockEmbeddingClient()
+    result = await client.embed(["aspirin 81mg for cardiovascular prevention"])
+    assert len(result) == 1
+    assert len(result[0]) == 3072
+    assert all(isinstance(v, float) for v in result[0])
+
+
+@pytest.mark.asyncio
+async def test_mock_is_deterministic():
+    """Same text always returns the identical vector."""
+    client = MockEmbeddingClient()
+    text = "metformin 500mg twice daily"
+    v1 = (await client.embed([text]))[0]
+    v2 = (await client.embed([text]))[0]
+    assert v1 == v2
+
+
+@pytest.mark.asyncio
+async def test_mock_different_texts_differ():
+    """Different texts produce distinct vectors."""
+    client = MockEmbeddingClient()
+    results = await client.embed(["aspirin", "metformin"])
+    assert results[0] != results[1]
+
+
+@pytest.mark.asyncio
+async def test_mock_vector_is_unit_norm():
+    """Mock vectors are normalized to unit sphere (magnitude ≈ 1.0)."""
+    client = MockEmbeddingClient()
+    v = (await client.embed(["heparin IV bolus protocol"]))[0]
+    magnitude = math.sqrt(sum(x * x for x in v))
+    assert magnitude == pytest.approx(1.0, abs=1e-5)
