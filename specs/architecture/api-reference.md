@@ -12,7 +12,10 @@
 ### Chat Service
 
 #### POST /knowledge/ask
-Ask a question — returns a streamed answer with source citations.
+Ask a question — returns the complete answer with source citations.
+
+> **Phase 1–2**: Returns a single JSON response (see [ADR 0008](../decisions/0008-ask-json-response-sse-deferred.md)).  
+> **Phase 3+**: SSE token-streaming planned (ENH-006).
 
 **Request**
 ```json
@@ -23,14 +26,14 @@ Ask a question — returns a streamed answer with source citations.
 }
 ```
 
-**Response** — Server-Sent Events (SSE) stream
-```
-data: {"token": "The recommended", "done": false}
-data: {"token": " starting dose", "done": false}
-...
-data: {"token": ".", "done": true, "sources": [
-  {"doc_id": "doc_001", "title": "Formulary 2025", "page": 42, "chunk": "...relevant excerpt..."}
-]}
+**Response** — HTTP 200 JSON
+```json
+{
+  "answer": "The recommended starting dose for Type 2 diabetes per the 2025 formulary is metformin 500 mg twice daily...",
+  "sources": [
+    {"doc_id": "doc_001", "title": "Formulary 2025", "page": 42}
+  ]
+}
 ```
 
 **Error codes**: 400 (invalid question), 401 (missing/invalid JWT), 429 (rate limit), 503 (LLM unavailable)

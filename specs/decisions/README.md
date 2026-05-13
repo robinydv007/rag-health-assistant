@@ -19,3 +19,4 @@
 | [0005](0005-ecs-fargate-over-eks.md) | ECS Fargate over EKS for container orchestration | accepted | 2026-05-12 |
 | [0006](0006-vector-db-weaviate.md) | Weaviate as primary vector database (hybrid search + alias swap) | accepted | 2026-05-12 |
 | [0007](0007-fastapi-backend-framework.md) | FastAPI for all HTTP-facing services | accepted | 2026-05-12 |
+| [0008](0008-ask-json-response-sse-deferred.md) | /ask returns JSON in Phase 1–2; SSE deferred to ENH-006 | accepted | 2026-05-13 |
