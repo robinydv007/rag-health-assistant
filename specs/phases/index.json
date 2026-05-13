@@ -32,8 +32,9 @@
       "name": "Admin and LLM Router",
       "slug": "phase-3-admin-llm-router",
       "version": "v0.4.0",
-      "status": "planned",
-      "path": "specs/phases/phase-3-admin-llm-router"
+      "status": "in-progress",
+      "path": "specs/phases/phase-3-admin-llm-router",
+      "topics": ["admin-service", "llm-router", "circuit-breaker", "weaviate", "zero-downtime-reindex", "indexing-coordinator", "indexing-jobs", "shadow-index", "alias-swap", "anthropic", "openai", "fastapi", "postgresql", "boto3", "sqs", "httpx", "asyncio", "dlq"]
     },
     {
       "number": 4,

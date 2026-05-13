@@ -1,7 +1,7 @@
 # Project Status
 
 > **Last Updated**: 2026-05-13
-> **Current Phase**: Phase 3 — Admin & LLM Router (`not started`)
+> **Current Phase**: Phase 3 — Admin & LLM Router (`in-progress`)
 > **Latest Release**: v0.3.0 (Phase 2 complete)
 > **Health**: On Track
 
@@ -19,7 +19,14 @@ The RAG Healthcare Knowledge Assistant is an internal AI system that allows heal
 
 ## Active Phase
 
-_(none — Phase 3 not yet started; run `/start-phase` to begin Admin & LLM Router)_
+| Item | Detail |
+|------|--------|
+| Phase | 3 — Admin & LLM Router |
+| Branch | `phase-3-admin-llm-router` |
+| Status | In Progress |
+| Groups | 0 → (1 ‖ 2) → 3 → 4 |
+| Open tasks | 20 |
+| P1 Bug | BUG-001 — indexing-service Weaviate startup crash (fix branch exists: `fix/indexing-service-weaviate-startup`) |
 
 ## Upcoming Phases
 
@@ -43,9 +50,9 @@ _(none — Phase 3 not yet started; run `/start-phase` to begin Admin & LLM Rout
 
 ## Next Actions
 
-1. Start Phase 3 — Admin & LLM Router (`/start-phase`)
-2. FEAT-025: Build search relevance evaluation set (deferred from Phase 2)
-3. ENH-002: Consider cross-encoder re-ranking for Phase 3
+1. Merge `fix/indexing-service-weaviate-startup` (BUG-001) into `phase-3-admin-llm-router` before Group 0
+2. Group 0: create `shared/llm_router/circuit_breaker.py` + Admin Service deps
+3. Groups 1 + 2 (parallel): Admin endpoints + LLM Router circuit breaker integration
 
 ## Key Decisions Made
 
