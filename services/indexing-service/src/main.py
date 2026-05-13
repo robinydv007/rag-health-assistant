@@ -119,6 +119,7 @@ async def lifespan(app: FastAPI):
                 await task
             except asyncio.CancelledError:
                 pass
+        await asyncio.to_thread(_writer.close)
 
 
 app = FastAPI(title="Indexing Service", lifespan=lifespan)

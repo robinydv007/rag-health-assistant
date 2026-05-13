@@ -39,7 +39,10 @@ def _chunk_uuid(chunk_id: str) -> str:
 
 class WeaviateWriter:
     def __init__(self, weaviate_url: str) -> None:
-        self._url = weaviate_url
+        self._client = _make_client(weaviate_url)
+
+    def close(self) -> None:
+        self._client.close()
 
     def upsert(self, msg: SQS3Message, title: str = "") -> None:
         """Upsert one KnowledgeChunk — idempotent via deterministic UUID."""
@@ -57,22 +60,21 @@ class WeaviateWriter:
         }
         chunk_uuid = _chunk_uuid(msg.chunk_id)
 
-        with _make_client(self._url) as client:
-            collection = client.collections.get(_COLLECTION)
-            try:
-                collection.data.insert(
+        collection = self._client.collections.get(_COLLECTION)
+        try:
+            collection.data.insert(
+                properties=props,
+                vector=msg.embedding,
+                uuid=chunk_uuid,
+            )
+        except Exception as e:
+            if "already exists" in str(e).lower() or "422" in str(e):
+                collection.data.replace(
+                    uuid=chunk_uuid,
                     properties=props,
                     vector=msg.embedding,
-                    uuid=chunk_uuid,
                 )
-            except Exception as e:
-                if "already exists" in str(e).lower() or "422" in str(e):
-                    collection.data.replace(
-                        uuid=chunk_uuid,
-                        properties=props,
-                        vector=msg.embedding,
-                    )
-                else:
-                    raise
+            else:
+                raise
 
         logger.debug("Upserted KnowledgeChunk chunk_id=%s", msg.chunk_id)
