@@ -7,7 +7,6 @@ drives result quality in this phase.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 from urllib.parse import urlparse
 
 import weaviate
@@ -15,21 +14,15 @@ import weaviate.classes as wvc
 
 from shared.config.settings import BaseServiceSettings
 
+from .models import SearchResult  # re-exported for callers that import from here
+
 _COLLECTION = "KnowledgeChunk"
 _VECTOR_DIM = 768
 _ZERO_VECTOR = [0.0] * _VECTOR_DIM
 _DEFAULT_LIMIT = 5
 _ALPHA = 0.4  # 40% vector, 60% BM25 (zero-vectors make vector side ~noise)
 
-
-@dataclass
-class SearchResult:
-    doc_id: str
-    chunk_id: str
-    text: str
-    title: str
-    page_num: int
-    score: float
+__all__ = ["SearchResult", "hybrid_search"]
 
 
 def _make_client(settings: BaseServiceSettings) -> weaviate.WeaviateClient:

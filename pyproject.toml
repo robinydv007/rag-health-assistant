@@ -1,10 +1,7 @@
 [tool.pytest.ini_options]
-testpaths = [
-    "tests",
-    "services/uploader-service/tests",
-    "services/doc-processing/tests",
-    "services/chat-service/tests",
-]
+# Root testpaths covers only shared code; service tests are run per-service
+# by CI (with PYTHONPATH=services/<svc>) to avoid `src` namespace collision.
+testpaths = ["tests"]
 pythonpath = ["."]
 
 [tool.ruff]

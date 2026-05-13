@@ -12,12 +12,11 @@ class TestTxtParser:
         assert result[0][1] == 1
 
     def test_latin1_fallback(self):
-        # é is 0xe9 in latin-1 but invalid in UTF-8 without the right sequence
-        content_latin1 = "Maladie cœliaque – résumé".encode("latin-1")
+        # 0xe9 is é in latin-1 but not a valid UTF-8 sequence in isolation
+        content_latin1 = "R\xe9sum\xe9 du patient".encode("latin-1")
         result = parse(content_latin1)
         assert len(result) == 1
         assert result[0][1] == 1
-        # Text must contain something (decoded without error)
         assert len(result[0][0]) > 0
 
     def test_empty_bytes_returns_empty_list(self):

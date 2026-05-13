@@ -13,7 +13,14 @@ import tiktoken
 from shared.models.chunk import ChunkMetadata
 from shared.models.document import DocType
 
-_ENC = tiktoken.get_encoding("cl100k_base")
+_ENC: tiktoken.Encoding | None = None
+
+
+def _get_enc() -> tiktoken.Encoding:
+    global _ENC
+    if _ENC is None:
+        _ENC = tiktoken.get_encoding("cl100k_base")
+    return _ENC
 
 MAX_TOKENS: int = 512
 OVERLAP_TOKENS: int = 50
@@ -50,13 +57,14 @@ def chunk_pages(
     chunks: list[Chunk] = []
     chunk_idx = 0
 
+    enc = _get_enc()
     for text, page_num in pages:
-        token_ids = _ENC.encode(text)
+        token_ids = enc.encode(text)
         pos = 0
 
         while pos < len(token_ids):
             window = token_ids[pos : pos + max_tokens]
-            chunk_text = _ENC.decode(window)
+            chunk_text = enc.decode(window)
             chunks.append(
                 Chunk(
                     text=chunk_text,

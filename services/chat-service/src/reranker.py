@@ -6,7 +6,7 @@ In Phase 1 this is a simple sort; Phase 3 may add cross-encoder reranking.
 
 from __future__ import annotations
 
-from .searcher import SearchResult
+from .models import SearchResult
 
 _DEFAULT_TOP_N = 3
 

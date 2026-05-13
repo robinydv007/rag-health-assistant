@@ -1,7 +1,7 @@
 """Unit tests for the score-based reranker."""
 
+from src.models import SearchResult
 from src.reranker import rerank
-from src.searcher import SearchResult
 
 
 def _make_result(doc_id: str, score: float) -> SearchResult:

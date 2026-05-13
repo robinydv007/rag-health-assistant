@@ -5,17 +5,23 @@ tiktoken is a pure-Python library with no external model downloads needed.
 """
 
 import tiktoken
-
-from shared.models.document import DocType
 from src.chunker import MAX_TOKENS, OVERLAP_TOKENS, chunk_pages
 
-_ENC = tiktoken.get_encoding("cl100k_base")
+from shared.models.document import DocType
+
+_ENC: tiktoken.Encoding | None = None
+
+
+def _enc() -> tiktoken.Encoding:
+    global _ENC
+    if _ENC is None:
+        _ENC = tiktoken.get_encoding("cl100k_base")
+    return _ENC
 
 
 def _make_long_text(token_count: int) -> str:
-    """Generate text that tokenises to approximately *token_count* tokens."""
     word = "clinical "
-    tokens_per_word = len(_ENC.encode(word))
+    tokens_per_word = len(_enc().encode(word))
     words_needed = token_count // tokens_per_word + 1
     return (word * words_needed).strip()
 
@@ -47,8 +53,8 @@ class TestChunkerSizes:
         pages = [(long_text, 1)]
         chunks = chunk_pages(pages, doc_id="d1", doc_type=DocType.other)
         assert len(chunks) >= 2
-        toks0 = _ENC.encode(chunks[0].text)
-        toks1 = _ENC.encode(chunks[1].text)
+        toks0 = _enc().encode(chunks[0].text)
+        toks1 = _enc().encode(chunks[1].text)
         # The last OVERLAP_TOKENS of chunk 0 should equal first OVERLAP_TOKENS of chunk 1
         overlap = min(OVERLAP_TOKENS, len(toks0), len(toks1))
         assert toks0[-overlap:] == toks1[:overlap]
