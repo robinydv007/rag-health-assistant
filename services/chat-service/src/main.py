@@ -1,4 +1,4 @@
-"""Chat Service — query expand → hybrid search → rerank → LLM SSE stream + audit log."""
+"""Chat Service — query expand → hybrid search → rerank → LLM call + audit log."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import Depends, FastAPI, Query
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ from shared.models.query import AskRequest
 
 from .db import get_session
 from .expander import expand_query
-from .llm_caller import stream_answer
+from .llm_caller import get_answer
 from .reranker import rerank
 from .searcher import SearchResult, hybrid_search
 
@@ -35,45 +35,31 @@ async def health() -> JSONResponse:
 async def ask(
     request: AskRequest,
     session: AsyncSession = Depends(get_session),
-) -> StreamingResponse:
-    """Stream an LLM answer to *request.question*.
+) -> JSONResponse:
+    """Return a complete LLM answer to *request.question*.
 
     Every call — including errors — writes one row to query_history (HC-2).
     """
     start_ms = int(time.time() * 1000)
-
-    question, synonyms = expand_query(request.question)
     top_sources: list[SearchResult] = []
-    full_response = ""
-    error_response = ""
+    answer = ""
+    citations = []
 
-    async def _generate():
-        nonlocal full_response, error_response, top_sources
-        try:
-            raw_results = await hybrid_search(question, synonyms)
-            top_sources = rerank(raw_results)
+    try:
+        question, synonyms = expand_query(request.question)
+        raw_results = await hybrid_search(question, synonyms)
+        top_sources = rerank(raw_results)
+        answer, citations = await get_answer(question, top_sources)
+    except Exception as exc:
+        logger.error("Error in /ask for user=%s: %s", request.user_id, exc, exc_info=True)
+        answer = f"Error: {exc}"
+    finally:
+        await _write_audit_log(session, request, top_sources, answer, start_ms)
 
-            tokens: list[str] = []
-            async for sse_line in stream_answer(question, top_sources):
-                yield sse_line
-                # Accumulate non-final tokens for audit log
-                if '"done": false' in sse_line or '"done":false' in sse_line:
-                    try:
-                        payload = json.loads(sse_line.removeprefix("data: ").strip())
-                        tokens.append(payload.get("token", ""))
-                    except Exception:
-                        pass
-            full_response = "".join(tokens)
-        except Exception as exc:
-            error_response = str(exc)
-            logger.error("Error in /ask for user=%s: %s", request.user_id, exc, exc_info=True)
-            error_payload = json.dumps({"error": error_response, "done": True, "sources": []})
-            yield f"data: {error_payload}\n\n"
-        finally:
-            response_text = full_response or error_response
-            await _write_audit_log(session, request, top_sources, response_text, start_ms)
-
-    return StreamingResponse(_generate(), media_type="text/event-stream")
+    return JSONResponse({
+        "answer": answer,
+        "sources": [c.model_dump() for c in citations],
+    })
 
 
 async def _write_audit_log(

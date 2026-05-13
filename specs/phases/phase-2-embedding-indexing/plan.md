@@ -126,10 +126,11 @@ Sequential:  Group 0 → (Groups 1 + 2 + 3 in parallel) → Group 4 → Group 5
 3. Update `services/chat-service/tests/test_searcher.py`:
    - Mock `EmbeddingClient.embed()` to return a deterministic non-zero vector
    - Assert the mocked vector is passed to Weaviate `nearVector` — not a zero-vector
-4. Integration test update (`services/chat-service/tests/test_ask_integration.py`):
+4. Integration test update (`services/chat-service/tests/test_integration.py`):
    - Seed Weaviate fixture chunks with real BiomedBERT vectors (pre-computed from the HF API, stored as fixture JSON)
    - Call `/ask` with a related question
-   - Assert the top result in SSE sources matches the seeded fixture doc — verifying semantic search is working
+   - Assert `body["sources"][0]["title"]` matches the seeded fixture doc — verifying semantic search is working
+   - Note: `/ask` returns full JSON (`{"answer": ..., "sources": [...]}`); no SSE assertions needed
 
 ---
 

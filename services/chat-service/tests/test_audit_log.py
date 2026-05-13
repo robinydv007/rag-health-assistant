@@ -36,27 +36,16 @@ class TestAuditLogOnSuccess:
 
         with (
             patch("src.main.hybrid_search", new_callable=AsyncMock) as mock_search,
-            patch("src.main.stream_answer") as mock_stream,
+            patch("src.main.get_answer", new_callable=AsyncMock) as mock_answer,
         ):
             mock_search.return_value = []
+            mock_answer.return_value = ("Aspirin 81mg is recommended.", [])
 
-            async def _fake_stream(question, sources):
-                yield 'data: {"token": "Answer.", "done": false}\n\n'
-                yield 'data: {"token": "", "done": true, "sources": []}\n\n'
-
-            mock_stream.return_value = _fake_stream("q", [])
-            mock_stream.side_effect = None
-
-            # Use side_effect with an async generator factory
-            async def _gen(q, s):
-                yield 'data: {"token": "Answer.", "done": false}\n\n'
-                yield 'data: {"token": "", "done": true, "sources": []}\n\n'
-
-            mock_stream.side_effect = _gen
-
-            client.post("/api/v1/knowledge/ask", json=_ASK_PAYLOAD)
+            resp = client.post("/api/v1/knowledge/ask", json=_ASK_PAYLOAD)
 
         app.dependency_overrides.clear()
+        assert resp.status_code == 200
+        assert "answer" in resp.json()
         # session.execute must have been called (for the audit log INSERT)
         assert mock_session.execute.await_count >= 1
         assert mock_session.commit.await_count >= 1

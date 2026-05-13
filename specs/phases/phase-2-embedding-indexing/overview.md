@@ -79,7 +79,7 @@ instead of noise from placeholder zero-vectors.
 1. SQS 2 message with chunks → Embedding Service calls HF BiomedBERT API → SQS 3 message contains a 768-dim float array for each chunk
 2. SQS 3 message → Indexing Service writes `KnowledgeChunk` to Weaviate with correct properties; `documents.chunks_indexed` incremented; `chunk_audit` row written with `embedded_model = "BiomedBERT"`
 3. When `chunks_indexed == chunks_total` for a document → `documents.status = indexed`
-4. `POST /ask` with a question → Weaviate hybrid search uses real BiomedBERT embedding (non-zero vector) → returns semantically relevant chunks
+4. `POST /ask` with a question → Weaviate hybrid search uses real BiomedBERT embedding (non-zero vector) → JSON response contains semantically relevant chunks in `sources`
 5. DLQ depth > 0 on any queue → alert logged; if `DLQ_ALERT_WEBHOOK_URL` is set, webhook POSTed with queue name and depth
 6. All unit tests and integration tests pass (`pytest services/ shared/ -v` exits 0)
 7. CI pipeline passes on a clean push to `phase-2-embedding-indexing` branch

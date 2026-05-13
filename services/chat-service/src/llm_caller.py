@@ -1,13 +1,10 @@
-"""LLM streaming caller for the Chat Service.
+"""LLM caller for the Chat Service.
 
-Wraps shared.clients.llm_client and yields JSON-encoded SSE data lines
-suitable for FastAPI's StreamingResponse.
+Wraps shared.clients.llm_client. Collects the full streamed response internally
+and returns it as a single string + source citations.
 """
 
 from __future__ import annotations
-
-import json
-from collections.abc import AsyncIterator
 
 from shared.clients.llm_client import stream_completion
 from shared.models.query import SourceCitation
@@ -43,32 +40,18 @@ def _to_citations(sources: list[SearchResult]) -> list[SourceCitation]:
     ]
 
 
-async def stream_answer(
+async def get_answer(
     question: str,
     sources: list[SearchResult],
-) -> AsyncIterator[str]:
-    """Yield SSE-formatted data strings for the /ask endpoint.
+) -> tuple[str, list[SourceCitation]]:
+    """Return the full LLM answer and source citations.
 
-    Each yield is a complete ``data: {...}\\n\\n`` line. The final event
-    includes ``done=true`` and the source citations list.
-
-    Args:
-        question: The user's question.
-        sources: Top-ranked search results to pass as context.
-
-    Yields:
-        SSE data lines as strings.
+    Streams tokens from the LLM internally and joins them before returning,
+    so the caller receives a single complete string.
     """
     user_prompt = _build_user_prompt(question, sources)
     citations = _to_citations(sources)
-
+    tokens: list[str] = []
     async for token in stream_completion(system_prompt=_SYSTEM_PROMPT, user_prompt=user_prompt):
-        payload = json.dumps({"token": token, "done": False})
-        yield f"data: {payload}\n\n"
-
-    final = json.dumps({
-        "token": "",
-        "done": True,
-        "sources": [c.model_dump() for c in citations],
-    })
-    yield f"data: {final}\n\n"
+        tokens.append(token)
+    return "".join(tokens), citations

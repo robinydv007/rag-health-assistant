@@ -1,14 +1,13 @@
 """Integration test for the Chat Service /ask endpoint.
 
 Seeds Weaviate with 3 fixture chunks (zero-vector embeddings), calls /ask,
-asserts SSE stream completes with done=true, and checks query_history row.
+asserts a complete JSON response is returned, and checks query_history row.
 
 Requires: docker-compose services (weaviate, postgres).
 Skipped when infrastructure env vars are absent.
 """
 
 import asyncio
-import json
 import os
 from unittest.mock import patch
 
@@ -61,7 +60,7 @@ def seeded_weaviate():
 
 @pytest.mark.skipif(not _infra_available(), reason="Infrastructure not available")
 class TestAskIntegration:
-    def test_ask_streams_done_event_and_writes_audit_row(self, seeded_weaviate):
+    def test_ask_returns_answer_and_writes_audit_row(self, seeded_weaviate):
         client = TestClient(app, raise_server_exceptions=True)
 
         async def _fake_stream(system_prompt, user_prompt):
@@ -70,20 +69,16 @@ class TestAskIntegration:
 
         import shared.clients.llm_client as _llm
         with patch.dict(_llm._PROVIDERS, {"openai": _fake_stream}):
-            with client.stream(
-                "POST",
+            resp = client.post(
                 "/api/v1/knowledge/ask",
                 json={"question": "What is the aspirin dose for CAD?", "user_id": "integ_test"},
-            ) as resp:
-                assert resp.status_code == 200
-                events = []
-                for line in resp.iter_lines():
-                    if line.startswith("data:"):
-                        events.append(json.loads(line[len("data:"):].strip()))
+            )
 
-        assert events, "No SSE events received"
-        final = events[-1]
-        assert final.get("done") is True
+        assert resp.status_code == 200
+        body = resp.json()
+        assert "answer" in body
+        assert "sources" in body
+        assert len(body["answer"]) > 0
 
         # Verify audit log row
         db_url = os.getenv("DATABASE_URL", "")
