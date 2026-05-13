@@ -23,10 +23,10 @@ from src.main import app
 
 pytestmark = pytest.mark.integration
 
-# Deterministic fixture vector — same dimensions as BiomedBERT (768), non-zero.
+# Deterministic fixture vector — same dimensions as text-embedding-3-large (3072), non-zero.
 # Used both when seeding Weaviate and when mocking _embedding_client.embed()
 # so the hybrid search finds the seeded document via vector similarity.
-_FIXTURE_VECTOR = [0.1 if i % 2 == 0 else -0.05 for i in range(768)]
+_FIXTURE_VECTOR = [0.1 if i % 2 == 0 else -0.05 for i in range(3072)]
 
 
 def _infra_available() -> bool:

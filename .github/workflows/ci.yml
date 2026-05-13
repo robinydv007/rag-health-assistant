@@ -45,6 +45,8 @@ jobs:
         run: |
           pip install \
             "pytest>=8.0.0" \
+            "pytest-asyncio>=0.23.0" \
+            "respx>=0.20.0" \
             "pydantic>=2.7.0" \
             "pydantic-settings>=2.2.1" \
             "fastapi>=0.111.0" \
@@ -91,4 +93,22 @@ jobs:
             services/chat-service/tests/test_searcher.py \
             services/chat-service/tests/test_reranker.py \
             services/chat-service/tests/test_audit_log.py \
+            -v --tb=short -m "not integration"
+      - name: Run embedding-service unit tests
+        env:
+          PYTHONPATH: services/embedding-service
+        run: |
+          pytest \
+            services/embedding-service/tests/test_batcher.py \
+            services/embedding-service/tests/test_embedding_client.py \
+            services/embedding-service/tests/test_publisher.py \
+            -v --tb=short -m "not integration"
+      - name: Run indexing-service unit tests
+        env:
+          PYTHONPATH: services/indexing-service
+        run: |
+          pytest \
+            services/indexing-service/tests/test_weaviate_writer.py \
+            services/indexing-service/tests/test_coordinator.py \
+            services/indexing-service/tests/test_dlq_monitor.py \
             -v --tb=short -m "not integration"

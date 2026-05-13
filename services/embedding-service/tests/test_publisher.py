@@ -1,15 +1,15 @@
 """Unit tests for SQS3Publisher — verifies IndexingJob schema compliance."""
 
-import json
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from src.publisher import SQS3Publisher
 
 from shared.models.chunk import ChunkMetadata
 from shared.models.document import DocType
 from shared.models.messages import SQS3Message
-from src.publisher import SQS3Publisher
 
-_EMBEDDING = [0.1] * 768
+_EMBEDDING = [0.1] * 3072
 _META = ChunkMetadata(
     doc_type=DocType.clinical_guideline,
     page_num=1,
@@ -49,6 +49,6 @@ async def test_publisher_sends_indexing_job_schema():
     assert body.doc_id == "doc-123"
     assert body.chunk_id == "doc-123_chunk_0000"
     assert body.text == "Aspirin 325mg once daily for pain relief"
-    assert len(body.embedding) == 768
+    assert len(body.embedding) == 3072
     assert body.target_index == "live"
     assert body.metadata.doc_type == DocType.clinical_guideline

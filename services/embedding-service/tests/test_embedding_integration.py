@@ -11,17 +11,17 @@ Skipped automatically when infra env vars are not set.
 import asyncio
 import json
 import os
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import boto3
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from src.main import _process_message
 
 from shared.models.chunk import ChunkMetadata
 from shared.models.document import DocType
-from shared.models.messages import SQS2Message, SQS2Chunk
-from src.main import _process_message
+from shared.models.messages import SQS2Chunk, SQS2Message
 
 pytestmark = pytest.mark.integration
 
@@ -85,8 +85,16 @@ class TestEmbeddingIntegration:
         msg = SQS2Message(
             doc_id=self.DOC_ID,
             chunks=[
-                SQS2Chunk(chunk_id=f"{self.DOC_ID}_chunk_0000", text="Aspirin 325mg once daily", metadata=meta),
-                SQS2Chunk(chunk_id=f"{self.DOC_ID}_chunk_0001", text="Metformin 500mg twice daily", metadata=meta),
+                SQS2Chunk(
+                    chunk_id=f"{self.DOC_ID}_chunk_0000",
+                    text="Aspirin 325mg once daily",
+                    metadata=meta,
+                ),
+                SQS2Chunk(
+                    chunk_id=f"{self.DOC_ID}_chunk_0001",
+                    text="Metformin 500mg twice daily",
+                    metadata=meta,
+                ),
             ],
         )
 

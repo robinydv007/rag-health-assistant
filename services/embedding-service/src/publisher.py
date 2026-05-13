@@ -7,8 +7,8 @@ import logging
 
 import boto3
 
-from shared.models.messages import SQS3Message
 from shared.models.chunk import ChunkMetadata
+from shared.models.messages import SQS3Message
 
 logger = logging.getLogger(__name__)
 

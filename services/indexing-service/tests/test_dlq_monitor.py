@@ -1,12 +1,13 @@
 """Unit tests for DLQ monitor — depth check, log warning, webhook POST."""
 
-import pytest
-import respx
-import httpx
 import logging
 from unittest.mock import MagicMock
 
-from shared.utils.dlq_monitor import check_dlq_depths, alert_if_needed
+import httpx
+import pytest
+import respx
+
+from shared.utils.dlq_monitor import alert_if_needed, check_dlq_depths
 
 _Q1 = "http://fake:9324/000000000000/dlq-1"
 _Q2 = "http://fake:9324/000000000000/dlq-2"

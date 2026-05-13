@@ -1,8 +1,8 @@
 """Unit tests for the Batcher class."""
 
 import time
-import pytest
 
+import pytest
 from src.batcher import Batcher
 
 _VECTOR = [0.1] * 768

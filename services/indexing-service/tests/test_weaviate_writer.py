@@ -1,18 +1,18 @@
 """Unit tests for WeaviateWriter — mocks weaviate client."""
 
-import pytest
 from unittest.mock import MagicMock, patch
+
+from src.weaviate_writer import EMBEDDED_MODEL, WeaviateWriter, _chunk_uuid
 
 from shared.models.chunk import ChunkMetadata
 from shared.models.document import DocType
 from shared.models.messages import SQS3Message
-from src.weaviate_writer import WeaviateWriter, EMBEDDED_MODEL, _chunk_uuid
 
 _MSG = SQS3Message(
     doc_id="doc-abc",
     chunk_id="doc-abc_chunk_0000",
     text="Aspirin 325mg once daily for pain relief",
-    embedding=[0.1] * 768,
+    embedding=[0.1] * 3072,
     metadata=ChunkMetadata(
         doc_type=DocType.clinical_guideline,
         page_num=3,
@@ -52,12 +52,12 @@ def test_weaviate_writer_inserts_with_correct_properties():
     assert props["docType"] == "clinical_guideline"
     assert props["title"] == "Clinical Guideline Test"
     assert props["pageNum"] == 3
-    assert props["embeddedModel"] == EMBEDDED_MODEL
+    assert props["embeddedModel"] == EMBEDDED_MODEL  # "text-embedding-3-large"
     assert "indexedAt" in props
 
 
 def test_weaviate_writer_vector_is_correct_length():
-    """WeaviateWriter passes the embedding vector with correct length."""
+    """WeaviateWriter passes the 3072-dim vector for text-embedding-3-large."""
     mock_client, mock_collection = _make_mock_client()
 
     with patch("src.weaviate_writer._make_client", return_value=mock_client):
@@ -65,7 +65,7 @@ def test_weaviate_writer_vector_is_correct_length():
         writer.upsert(_MSG)
 
     call_kwargs = mock_collection.data.insert.call_args.kwargs
-    assert len(call_kwargs["vector"]) == 768
+    assert len(call_kwargs["vector"]) == 3072
 
 
 def test_weaviate_writer_uses_deterministic_uuid():

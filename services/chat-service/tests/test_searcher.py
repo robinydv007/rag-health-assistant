@@ -42,7 +42,7 @@ def _make_mock_weaviate_client(objects: list) -> MagicMock:
     return mock_client
 
 
-_FAKE_VECTOR = [0.42] * 768
+_FAKE_VECTOR = [0.42] * 3072
 
 
 @pytest.fixture()

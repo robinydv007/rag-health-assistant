@@ -35,7 +35,10 @@ async def _process_message(body: str) -> None:
     # Mark document as embedding
     async with SessionLocal() as session:
         await session.execute(
-            text("UPDATE documents SET status = 'embedding', updated_at = NOW() WHERE doc_id = :doc_id"),
+            text(
+                "UPDATE documents SET status = 'embedding', updated_at = NOW()"
+                " WHERE doc_id = :doc_id"
+            ),
             {"doc_id": msg.doc_id},
         )
         await session.commit()
@@ -56,11 +59,11 @@ async def _process_message(body: str) -> None:
 
     # Publish one SQS 3 message per chunk
     for chunk_id, embedding in all_results:
-        text, meta = chunk_info[chunk_id]
+        chunk_text, meta = chunk_info[chunk_id]
         await _publisher.publish(
             doc_id=msg.doc_id,
             chunk_id=chunk_id,
-            text=text,
+            text=chunk_text,
             embedding=embedding,
             metadata=meta,
         )

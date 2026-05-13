@@ -1,12 +1,11 @@
 """Unit tests for the Indexing Coordinator and chunk_audit writer."""
 
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, call, patch
-
-from src.coordinator import maybe_complete_document
 from src.audit_writer import write_chunk_audit
+from src.coordinator import maybe_complete_document
 from src.weaviate_writer import EMBEDDED_MODEL
-
 
 # ── Coordinator tests ────────────────────────────────────────────────────────
 
@@ -56,8 +55,8 @@ async def test_coordinator_no_update_when_total_unknown():
 # ── Audit writer tests ────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_audit_writer_inserts_with_biomedbert():
-    """chunk_audit writer inserts a row with embedded_model = 'BiomedBERT'."""
+async def test_audit_writer_inserts_with_correct_model():
+    """chunk_audit writer inserts a row with embedded_model = 'text-embedding-3-large'."""
     session = AsyncMock()
     session.execute = AsyncMock()
 

@@ -14,7 +14,7 @@ from shared.models.messages import SQS3Message
 logger = logging.getLogger(__name__)
 
 _COLLECTION = "KnowledgeChunk"
-EMBEDDED_MODEL = "BiomedBERT"
+EMBEDDED_MODEL = "text-embedding-3-large"
 
 
 def _make_client(weaviate_url: str) -> weaviate.WeaviateClient:

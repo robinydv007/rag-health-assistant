@@ -6,9 +6,9 @@ BATCH_SIZE is reached or FLUSH_INTERVAL seconds have elapsed since the last flus
 
 from __future__ import annotations
 
-import time
 import logging
-from collections.abc import Callable, Awaitable
+import time
+from collections.abc import Awaitable, Callable
 
 logger = logging.getLogger(__name__)
 

@@ -94,12 +94,14 @@ def test_sqs3_message():
     msg = SQS3Message(
         doc_id="doc_001",
         chunk_id="doc_001_chunk_000",
+        text="Aspirin 325mg once daily for pain.",
         embedding=[0.123, -0.456, 0.789],
         metadata=metadata,
         target_index="live",
     )
     assert len(msg.embedding) == 3
     assert msg.target_index == "live"
+    assert msg.text == "Aspirin 325mg once daily for pain."
 
 
 def test_ask_request_optional_session():

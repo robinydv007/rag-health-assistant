@@ -1,12 +1,11 @@
 """Embedding client with provider abstraction.
 
-Switch between HuggingFace Serverless Inference API and any HTTP endpoint
-by setting EMBEDDING_PROVIDER=hf_inference (default) | http_endpoint.
+Switch between OpenAI and any HTTP endpoint by setting
+EMBEDDING_PROVIDER=openai (default) | http_endpoint.
 """
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
 from abc import ABC, abstractmethod
@@ -15,65 +14,50 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-_HF_503_RETRY_LIMIT = 5
-_HF_503_RETRY_DELAY = 20.0  # seconds; HF sends estimated_time in response
+_OPENAI_EMBED_URL = "https://api.openai.com/v1/embeddings"
 
 
 class EmbeddingClient(ABC):
     @abstractmethod
     async def embed(self, texts: list[str]) -> list[list[float]]:
-        """Return one 768-dim vector per input text."""
+        """Return one embedding vector per input text."""
 
 
-class HFInferenceClient(EmbeddingClient):
-    """Calls the HuggingFace Serverless Inference feature-extraction pipeline.
+class OpenAIEmbeddingClient(EmbeddingClient):
+    """Calls the OpenAI Embeddings API.
 
-    Request:  POST {url}  body: {"inputs": ["text", ...]}
-    Response: [[float, ...], ...]  (N vectors × 768 dims for BiomedBERT)
+    Model: text-embedding-3-large (3072 dims) by default.
+    Set EMBEDDING_PROVIDER=openai, OPENAI_API_KEY, and optionally
+    OPENAI_EMBEDDING_MODEL to use.
 
-    Retries up to _HF_503_RETRY_LIMIT times when the model is cold-starting
-    (HTTP 503 with {"estimated_time": N}).
+    Request:  POST https://api.openai.com/v1/embeddings
+              body: {"model": "...", "input": ["text", ...]}
+    Response: {"data": [{"index": 0, "embedding": [...]}, ...]}
     """
 
-    def __init__(self, url: str, api_key: str) -> None:
-        self._url = url
+    def __init__(self, api_key: str, model: str) -> None:
+        self._api_key = api_key
+        self._model = model
         self._headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         }
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
-        if not self._url:
-            raise ValueError(
-                "HF_INFERENCE_URL must be set when EMBEDDING_PROVIDER=hf_inference"
-            )
-        payload = {"inputs": texts}
+        if not self._api_key:
+            raise ValueError("OPENAI_API_KEY must be set when EMBEDDING_PROVIDER=openai")
+        payload = {"model": self._model, "input": texts}
         async with httpx.AsyncClient(timeout=60.0) as client:
-            for attempt in range(_HF_503_RETRY_LIMIT):
-                resp = await client.post(self._url, json=payload, headers=self._headers)
-                if resp.status_code == 503:
-                    wait = _HF_503_RETRY_DELAY
-                    try:
-                        wait = float(resp.json().get("estimated_time", _HF_503_RETRY_DELAY))
-                    except Exception:
-                        pass
-                    logger.warning(
-                        "HF model loading (503) — attempt %d/%d, retrying in %.0fs",
-                        attempt + 1,
-                        _HF_503_RETRY_LIMIT,
-                        wait,
-                    )
-                    await asyncio.sleep(wait)
-                    continue
-                resp.raise_for_status()
-                return resp.json()
-        raise RuntimeError(
-            f"HF Inference API returned 503 after {_HF_503_RETRY_LIMIT} retries"
-        )
+            resp = await client.post(_OPENAI_EMBED_URL, json=payload, headers=self._headers)
+            resp.raise_for_status()
+            data = resp.json()["data"]
+            # Sort by index to guarantee order matches input
+            data.sort(key=lambda d: d["index"])
+            return [d["embedding"] for d in data]
 
 
 class HTTPEndpointClient(EmbeddingClient):
-    """Calls any HTTP model server that speaks the HF feature-extraction contract.
+    """Calls any HTTP model server that accepts a JSON embedding request.
 
     Compatible with: Triton, vLLM, or a custom FastAPI wrapper around transformers.
     Set EMBEDDING_PROVIDER=http_endpoint and EMBEDDING_ENDPOINT_URL to use.
@@ -100,18 +84,20 @@ class HTTPEndpointClient(EmbeddingClient):
 def get_embedding_client() -> EmbeddingClient:
     """Return the configured embedding client based on EMBEDDING_PROVIDER.
 
-    URL validation is deferred to embed() time so modules can be imported and
-    tested without requiring all env vars to be present at import time.
+    Key validation is deferred to embed() time so modules can be imported
+    and tested without requiring all env vars to be present at import time.
     """
-    provider = os.environ.get("EMBEDDING_PROVIDER", "hf_inference")
-    if provider == "hf_inference":
-        url = os.environ.get("HF_INFERENCE_URL", "")
-        api_key = os.environ.get("HF_API_KEY", "")
-        return HFInferenceClient(url=url, api_key=api_key)
+    provider = os.environ.get("EMBEDDING_PROVIDER", "openai")
+    if provider == "openai":
+        return OpenAIEmbeddingClient(
+            api_key=os.environ.get("OPENAI_API_KEY", ""),
+            model=os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-large"),
+        )
     if provider == "http_endpoint":
-        url = os.environ.get("EMBEDDING_ENDPOINT_URL", "")
-        api_key = os.environ.get("EMBEDDING_API_KEY")
-        return HTTPEndpointClient(url=url, api_key=api_key)
+        return HTTPEndpointClient(
+            url=os.environ.get("EMBEDDING_ENDPOINT_URL", ""),
+            api_key=os.environ.get("EMBEDDING_API_KEY"),
+        )
     raise ValueError(
-        f"Unknown EMBEDDING_PROVIDER '{provider}'. Supported: hf_inference, http_endpoint"
+        f"Unknown EMBEDDING_PROVIDER '{provider}'. Supported: openai, http_endpoint"
     )

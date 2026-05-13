@@ -10,19 +10,17 @@ Skipped automatically when infra env vars are not set.
 """
 
 import asyncio
-import json
 import os
-from unittest.mock import patch
 
 import boto3
 import pytest
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from src.main import _process_message
 
 from shared.models.chunk import ChunkMetadata
 from shared.models.document import DocType
 from shared.models.messages import SQS3Message
-from src.main import _process_message
 
 pytestmark = pytest.mark.integration
 
@@ -108,7 +106,10 @@ class TestIndexingIntegration:
                     {"doc_id": self.DOC_ID},
                 )
                 audit_row = await session.execute(
-                    text("SELECT count(*) FROM chunk_audit WHERE doc_id = :doc_id AND chunk_id = :cid"),
+                    text(
+                        "SELECT count(*) FROM chunk_audit"
+                        " WHERE doc_id = :doc_id AND chunk_id = :cid"
+                    ),
                     {"doc_id": self.DOC_ID, "cid": self.CHUNK_ID},
                 )
                 return doc_row.fetchone(), audit_row.scalar()
