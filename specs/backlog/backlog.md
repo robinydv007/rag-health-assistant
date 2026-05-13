@@ -74,3 +74,4 @@
 | ENH-003 | Document version management (track doc updates over time) | P3 | open | 3 | features |
 | ENH-004 | Multi-language support for non-English clinical documents | P3 | open | 5 | features |
 | ENH-005 | Web UI for clinical staff (React frontend) | P3 | open | 5 | features |
+| ENH-006 | SSE streaming for /ask endpoint (token-by-token) | P3 | open | - | chat |

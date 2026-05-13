@@ -10,7 +10,21 @@
       "Bash(Sort-Object FullName)",
       "PowerShell(Get-ChildItem -Path \"D:\\\\Development\\\\Projects\\\\ai\\\\rag-health-assistant\" -Force | Select-Object Name, @{Name=\"Type\";Expression={if\\($_.PSIsContainer\\){\"DIR\"}else{\"FILE\"}}} | Sort-Object Name)",
       "PowerShell(Get-ChildItem *)",
-      "Bash(awk '{print $NF}')"
+      "Bash(awk '{print $NF}')",
+      "Bash(git tag *)",
+      "Bash(git push *)",
+      "Bash(gh release create v0.1.0 --title 'v0.1.0 — Phase 0: Bootstrap' --target main --notes ' *)",
+      "Bash(where gh *)",
+      "Bash(gh --version)",
+      "PowerShell(gh *)",
+      "Bash(git checkout *)",
+      "Bash(git stash *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git -C \"D:\\\\Development\\\\Projects\\\\ai\\\\rag-health-assistant\" branch --show-current)",
+      "Bash(git -C \"D:\\\\Development\\\\Projects\\\\ai\\\\rag-health-assistant\" log --oneline -3)",
+      "Bash(git -C \"D:\\\\Development\\\\Projects\\\\ai\\\\rag-health-assistant\" branch -a)",
+      "Bash(git pull *)"
     ]
   }
 }
