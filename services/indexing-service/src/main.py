@@ -15,7 +15,7 @@ from shared.utils.dlq_monitor import monitor_loop
 
 from .audit_writer import write_chunk_audit
 from .config import settings
-from .coordinator import maybe_complete_document
+from .coordinator import maybe_complete_document, maybe_complete_indexing_job
 from .db import SessionLocal
 from .pg_updater import increment_chunks_indexed
 from .weaviate_writer import WeaviateWriter
@@ -53,7 +53,9 @@ async def _process_message(body: str) -> None:
             chunk_id=msg.chunk_id,
             index_name=msg.target_index,
         )
-        await maybe_complete_document(session, msg.doc_id, chunks_indexed, chunks_total)
+        completed = await maybe_complete_document(session, msg.doc_id, chunks_indexed, chunks_total)
+        if completed:
+            await maybe_complete_indexing_job(session, msg.doc_id)
         await session.commit()
 
 

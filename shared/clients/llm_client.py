@@ -1,8 +1,12 @@
-"""Async LLM streaming client with provider registry.
+"""Async LLM streaming client with provider registry and circuit breaker.
 
 Primary and fallback providers are set via env vars:
   LLM_PRIMARY=openai      (default)
   LLM_FALLBACK=anthropic  (default)
+
+Circuit breaker (shared.llm_router.circuit_breaker):
+  - 3 consecutive failures or a 5s timeout → state OPEN → skip primary
+  - After 60s → HALF_OPEN probe; success → CLOSED; failure → OPEN
 
 Adding a new provider: implement an async generator with the signature
   async def _<name>_stream(system_prompt, user_prompt) -> AsyncIterator[str]
@@ -11,18 +15,22 @@ and register it in _PROVIDERS.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from collections.abc import AsyncIterator
+
+from shared.llm_router.circuit_breaker import _llm_circuit_breaker
 
 logger = logging.getLogger(__name__)
 
 
 # ── Provider registry ────────────────────────────────────────────────────────
 # Maps provider name → callable(system_prompt, user_prompt) -> AsyncIterator[str]
-# Register new providers here — nothing else in this file needs to change.
 
 _PROVIDERS: dict[str, object] = {}  # populated below after function definitions
+
+_TIMEOUT_SECONDS = 5.0
 
 
 async def stream_completion(
@@ -31,8 +39,9 @@ async def stream_completion(
 ) -> AsyncIterator[str]:
     """Yield tokens — primary provider first, fallback on any failure.
 
-    Primary and fallback are resolved from LLM_PRIMARY / LLM_FALLBACK env vars.
-    Falls back silently (logs a warning) if the primary raises any exception.
+    Integrates the circuit breaker: if OPEN, skip primary immediately.
+    A 5s timeout or any exception from primary records a failure; if the
+    failure threshold is reached the breaker trips to OPEN.
 
     Args:
         system_prompt: Instruction context for the model.
@@ -51,18 +60,32 @@ async def stream_completion(
     primary_fn = _resolve(primary)
     fallback_fn = _resolve(fallback)
 
-    try:
-        async for token in primary_fn(system_prompt, user_prompt):
-            yield token
-    except Exception as exc:
-        logger.warning(
-            "LLM primary '%s' failed (%s), switching to fallback '%s'",
+    if _llm_circuit_breaker.is_available():
+        try:
+            async with asyncio.timeout(_TIMEOUT_SECONDS):
+                async for token in primary_fn(system_prompt, user_prompt):
+                    yield token
+            _llm_circuit_breaker.record_success()
+            return
+        except (asyncio.TimeoutError, Exception) as exc:
+            _llm_circuit_breaker.record_failure()
+            logger.warning(
+                "LLM primary '%s' failed (%s: %s), circuit state=%s, switching to fallback '%s'",
+                primary,
+                type(exc).__name__,
+                exc,
+                _llm_circuit_breaker.state.value,
+                fallback,
+            )
+    else:
+        logger.info(
+            "Circuit breaker OPEN — skipping primary '%s', routing to fallback '%s'",
             primary,
-            exc,
             fallback,
         )
-        async for token in fallback_fn(system_prompt, user_prompt):
-            yield token
+
+    async for token in fallback_fn(system_prompt, user_prompt):
+        yield token
 
 
 def _resolve(name: str):
@@ -127,7 +150,6 @@ async def _mock_stream(system_prompt: str, user_prompt: str) -> AsyncIterator[st
 
 
 # ── Register providers ───────────────────────────────────────────────────────
-# To add a new provider: implement _<name>_stream above and add it here.
 
 _PROVIDERS["openai"] = _openai_stream
 _PROVIDERS["anthropic"] = _anthropic_stream
