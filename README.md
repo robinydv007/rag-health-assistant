@@ -19,7 +19,7 @@ The system is composed of 6 microservices behind an AWS API Gateway:
 | **Chat Service** | Query expansion → hybrid search → rerank → LLM → SSE stream |
 | **Uploader Service** | Receive file → S3 → PostgreSQL → enqueue |
 | **Doc Processing** | PII scrub → parse → chunk → enqueue |
-| **Embedding Service** | BioGPT/SciBERT vectorisation (GPU) → enqueue |
+| **Embedding Service** | OpenAI text-embedding-3-large (3072-dim) → enqueue |
 | **Indexing Service** | Write vectors to Weaviate → update status → audit log |
 | **Admin Service** | Re-index, alias swap, DLQ management, health checks |
 
@@ -46,7 +46,8 @@ Services communicate through **AWS SQS queues** (3 queues + 3 Dead Letter Queues
 |---|---|
 | [0001](specs/decisions/0001-microservices-over-monolith.md) | Microservices — one job per service |
 | [0002](specs/decisions/0002-sqs-async-pipeline.md) | SQS async pipeline with DLQs |
-| [0003](specs/decisions/0003-medical-embedding-models.md) | BioGPT/SciBERT for medical embeddings |
+| [0003](specs/decisions/0003-medical-embedding-models.md) | BioGPT/SciBERT for medical embeddings (superseded by 0003a) |
+| [0003a](specs/decisions/0003a-biomedbert-hf-inference-api.md) | OpenAI text-embedding-3-large replaces BiomedBERT (not production-ready) |
 | [0004](specs/decisions/0004-zero-downtime-reindex.md) | Shadow index + alias swap |
 | [0005](specs/decisions/0005-ecs-fargate-over-eks.md) | ECS Fargate over EKS |
 | [0006](specs/decisions/0006-vector-db-weaviate.md) | Weaviate as vector DB (hybrid search + alias swap) |
@@ -64,8 +65,8 @@ Full ADR index → [specs/decisions/README.md](specs/decisions/README.md)
 | Backend | Python FastAPI | Async-native, SSE streaming, ML ecosystem |
 | RAG | LangChain | Retrieval chains, prompt management |
 | LLM (primary) | GPT-4 / Claude 3 | Best quality for medical queries |
-| LLM (fallback) | Llama 2 / Mistral 7B | Self-hosted, works if primary is down |
-| Embeddings | BioGPT / SciBERT | Trained on medical text |
+| LLM (fallback) | Anthropic Claude (claude-sonnet-4-6) | API-based fallback; self-hosted Ollama planned for Phase 3 |
+| Embeddings | OpenAI text-embedding-3-large | 3072-dim; GPU-swappable via `EMBEDDING_PROVIDER` env var |
 | Vector DB | Weaviate | Hybrid semantic + keyword (BM25) search |
 | SQL DB | PostgreSQL (RDS Multi-AZ) | Audit logs, doc status, query history |
 | Queues | AWS SQS | Managed, DLQ built-in, drives autoscaling |
@@ -83,7 +84,7 @@ Full ADR index → [specs/decisions/README.md](specs/decisions/README.md)
 User uploads file
   → Uploader Service (S3 + PostgreSQL + SQS 1)
   → Doc Processing (PII scrub → chunk → SQS 2)
-  → Embedding Service (BioGPT/SciBERT → SQS 3)
+  → Embedding Service (text-embedding-3-large → SQS 3)
   → Indexing Service (write to Weaviate + audit log)
 ```
 
@@ -114,6 +115,7 @@ User asks question
 
 | Document | Contents |
 |---|---|
+| [Summary](SUMMARY.md) | 1-page overview — architecture, design decisions, how to run |
 | [Roadmap](specs/planning/roadmap.md) | 6-phase release plan (v0.1 → v1.0) |
 | [Status](specs/status.md) | Current phase, progress, blockers |
 | [Backlog](specs/backlog/backlog.md) | Features, bugs, tech debt |
@@ -122,13 +124,93 @@ User asks question
 
 ## Quick Start
 
-```bash
-# Copy environment variables
-cp .env.example .env
+### Prerequisites
 
-# Start all services locally
-docker compose up
+- [Docker](https://docs.docker.com/get-docker/) 24+ with Docker Compose v2
+- An OpenAI API key — **or** use mock mode (see below) to run without one
+
+### 1. Configure environment
+
+```bash
+cp .env.example .env
 ```
 
-> Detailed setup → [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)  
-> API usage → [docs/API.md](docs/API.md)
+Open `.env` and fill in your API keys:
+
+```
+OPENAI_API_KEY=sk-...        # for embeddings + LLM
+ANTHROPIC_API_KEY=sk-ant-... # for LLM fallback
+```
+
+**No API key? Use mock mode.** Uncomment these three lines in `.env` to run the full ingest + search pipeline locally with placeholder LLM responses — no external calls made:
+
+```
+EMBEDDING_PROVIDER=mock
+LLM_PRIMARY=mock
+LLM_FALLBACK=mock
+```
+
+### 2. Start all services
+
+The docker-compose file lives under `infrastructure/docker/`. Run from the repo root:
+
+```bash
+docker compose -f infrastructure/docker/docker-compose.yml up --build
+```
+
+This starts 8 application services plus PostgreSQL, Weaviate, ElasticMQ (SQS), and MinIO (S3). Database migrations and Weaviate schema initialisation run automatically on first boot.
+
+### 3. Verify everything is up
+
+```bash
+# All six services should return HTTP 200
+curl http://localhost:8001/health   # chat-service
+curl http://localhost:8002/health   # uploader-service
+curl http://localhost:8006/api/v1/health  # admin-service
+```
+
+### Service ports
+
+| Service | Local port |
+|---|---|
+| Chat Service | `8001` |
+| Uploader Service | `8002` |
+| Admin Service | `8006` |
+| Weaviate | `8080` |
+| Adminer (DB UI) | `8081` |
+| PostgreSQL | `5432` |
+| ElasticMQ (SQS) | `9324` |
+| MinIO (S3) | `9000` / `9001` (console) |
+
+### 4. Upload a document
+
+```bash
+curl -X POST http://localhost:8002/api/v1/knowledge/ingest \
+  -F "file=@/path/to/your/document.pdf" \
+  -F "title=My Document" \
+  -F "doc_type=clinical_guideline"
+```
+
+The document flows through the async pipeline automatically:
+`Uploader → Doc Processing → Embedding → Indexing → Weaviate`
+
+### 5. Ask a question
+
+```bash
+curl -X POST http://localhost:8001/api/v1/knowledge/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is the protocol for patient discharge?", "user_id": "usr_001", "session_id": "sess_001"}'
+```
+
+### 6. Trigger a re-index (optional)
+
+Forces all documents to be re-embedded and re-indexed into a shadow index, then swaps the alias atomically when complete:
+
+```bash
+curl -X POST http://localhost:8006/api/v1/admin/reindex \
+  -H "Content-Type: application/json" \
+  -d '{"reason": "embedding model upgrade"}'
+```
+
+> API reference → [specs/architecture/api-reference.md](specs/architecture/api-reference.md)  
+> OpenAPI spec → [specs/architecture/openapi.yaml](specs/architecture/openapi.yaml)

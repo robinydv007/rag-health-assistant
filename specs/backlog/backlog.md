@@ -1,6 +1,6 @@
 # Backlog
 
-> **Last Updated**: 2026-05-12
+> **Last Updated**: 2026-05-13
 
 ---
 
@@ -21,7 +21,7 @@
 
 | ID | Title | Priority | Status | Phase | Detail |
 |----|-------|----------|--------|-------|--------|
-| _(none)_ | | | | | |
+| BUG-001 | indexing-service crashes on startup — Weaviate connected at import time; depends_on missing health condition | P1 | open | 2 | [→](details/BUG-001.md) |
 
 ---
 
